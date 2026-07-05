@@ -41,3 +41,23 @@ This document records important project decisions and the reasoning behind them.
 **Reason:** SQLite provides one portable database file, reliability, easy backup, CSV export, and future analytical capability.
 
 **Date:** 2026-07-05
+
+---
+
+## Decision 0005: Separate Created Time from Occurred Time
+
+**Decision:** Store both `created_at` and `occurred_at` for each event.
+
+**Reason:** `created_at` records when the database entry was made, while `occurred_at` records when the behavior happened. For Version 0.1 both will default to the current time, but separating them preserves timeline accuracy without adding user-interface complexity.
+
+**Date:** 2026-07-05
+
+---
+
+## Decision 0006: Use a Generic Events Table
+
+**Decision:** Store exercise logs in a generic `events` table rather than an `exercise_events` table.
+
+**Reason:** The long-term model is that behaviors are events. This supports future event types at essentially no cost to Version 0.1.
+
+**Date:** 2026-07-05

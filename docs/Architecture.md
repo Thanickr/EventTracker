@@ -39,3 +39,18 @@ For Version 0.1, all events are exercise events.
 Capture first. Analyze later.
 
 The application should make recording behavior easier than thinking about behavior.
+
+## Initial Data Model
+
+### events
+
+| Field | Type | Notes |
+|---|---|---|
+| id | integer | Primary key |
+| created_at | text | When the record was created |
+| occurred_at | text | When the exercise occurred |
+| event_type | text | Initially always `exercise` |
+| exercise_type | text | Example: run, walk, weights |
+| amount | real | Numeric quantity |
+| unit | text | Example: mile, minute, rep |
+| note | text | Optional |
