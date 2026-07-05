@@ -61,3 +61,13 @@ This document records important project decisions and the reasoning behind them.
 **Reason:** The long-term model is that behaviors are events. This supports future event types at essentially no cost to Version 0.1.
 
 **Date:** 2026-07-05
+
+---
+
+## Decision 0007: Keep Version 0.1 Schema Minimal
+
+**Decision:** Version 0.1 uses a single `events` table with only the fields required to log exercise events.
+
+**Reason:** The highest priority is long-term adherence. Additional tables for users, settings, tags, exercise catalogs, or analytics would increase complexity before real usage justifies them.
+
+**Date:** 2026-07-05
