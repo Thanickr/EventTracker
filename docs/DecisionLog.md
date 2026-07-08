@@ -71,3 +71,15 @@ This document records important project decisions and the reasoning behind them.
 **Reason:** The highest priority is long-term adherence. Additional tables for users, settings, tags, exercise catalogs, or analytics would increase complexity before real usage justifies them.
 
 **Date:** 2026-07-05
+
+---
+
+## Decision 0008: Build a Local Python Backend Before the PWA
+
+**Decision:** Version 0.1 will first expose the SQLite data layer through a small local Python web backend.
+
+**Reason:** A browser-based PWA cannot directly write to the local SQLite database file. A Python backend allows the application to preserve the SQLite-first architecture while giving the future PWA a simple interface for saving and reading events.
+
+**Tradeoff:** This means the Windows computer must be running the backend for the phone to log directly to SQLite. If real-world use shows that this creates friction, phone-local browser storage will be reconsidered.
+
+**Date:** 2026-07-05
