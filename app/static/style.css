@@ -1,0 +1,96 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    color: #222;
+}
+
+.app {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 24px 16px;
+}
+
+h1 {
+    margin-bottom: 4px;
+}
+
+.subtitle {
+    margin-top: 0;
+    color: #666;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+label {
+    display: block;
+    margin-top: 12px;
+    margin-bottom: 4px;
+    font-weight: bold;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+button {
+    width: 100%;
+    margin-top: 18px;
+    padding: 14px;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    background: #222;
+    color: white;
+    cursor: pointer;
+}
+
+button:active {
+    transform: scale(0.99);
+}
+
+.optional {
+    font-weight: normal;
+    color: #777;
+}
+
+.status {
+    margin-bottom: 0;
+    font-weight: bold;
+}
+
+.events-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.event {
+    padding: 10px;
+    border-radius: 8px;
+    background: #f1f1f1;
+}
+
+.event-main {
+    font-weight: bold;
+}
+
+.event-meta {
+    font-size: 14px;
+    color: #666;
+}
