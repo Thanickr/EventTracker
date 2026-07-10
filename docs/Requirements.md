@@ -18,6 +18,16 @@ Each exercise event records:
 - unit
 - optional note
 
+## Current Version 0.1 Capabilities
+
+The application currently supports:
+
+- creating a local SQLite database from the project schema
+- logging exercise events from a command-line interface
+- running a local FastAPI backend
+- logging exercise events from a browser-based form
+- viewing recent exercise events in the browser interface
+
 ## Functional Requirements
 
 ### FR-001: Log Exercise Event

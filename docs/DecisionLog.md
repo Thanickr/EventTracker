@@ -83,3 +83,13 @@ This document records important project decisions and the reasoning behind them.
 **Tradeoff:** This means the Windows computer must be running the backend for the phone to log directly to SQLite. If real-world use shows that this creates friction, phone-local browser storage will be reconsidered.
 
 **Date:** 2026-07-05
+
+---
+
+## Decision 0009: Build the First Browser Interface Before Full PWA Installation
+
+**Decision:** Build a simple browser-based logging interface before adding full PWA behavior.
+
+**Reason:** The highest-risk workflow is basic capture: form input, backend save, database write, and recent event display. Proving this path first reduces implementation risk before adding PWA installation, offline support, or phone-specific behavior.
+
+**Date:** 2026-07-05

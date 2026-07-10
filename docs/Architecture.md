@@ -54,3 +54,14 @@ The application should make recording behavior easier than thinking about behavi
 | amount | real | Numeric quantity |
 | unit | text | Example: mile, minute, rep |
 | note | text | Optional |
+
+## Current Local Web Architecture
+
+Version 0.1 currently runs as a local web application.
+
+```text
+Browser UI
+    ↓
+FastAPI backend
+    ↓
+SQLite database
