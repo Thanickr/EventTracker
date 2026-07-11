@@ -93,3 +93,13 @@ This document records important project decisions and the reasoning behind them.
 **Reason:** The highest-risk workflow is basic capture: form input, backend save, database write, and recent event display. Proving this path first reduces implementation risk before adding PWA installation, offline support, or phone-specific behavior.
 
 **Date:** 2026-07-05
+
+---
+
+## Decision 0010: Add Basic PWA Support Before Offline Logging
+
+**Decision:** Add basic Progressive Web App support so Event Tracker can be launched from the phone home screen.
+
+**Reason:** Reducing launch friction directly supports long-term adherence. Offline logging is intentionally postponed because the current system already works when the local backend is reachable, and offline sync would add complexity before real usage justifies it.
+
+**Date:** 2026-07-05
