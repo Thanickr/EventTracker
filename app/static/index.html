@@ -5,7 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Event Tracker</title>
     <link rel="stylesheet" href="/static/style.css" />
+    <link rel="manifest" href="/static/manifest.json" />
+    <meta name="theme-color" content="#222222" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Event Tracker" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 </head>
+
 <body>
     <main class="app">
         <h1>Event Tracker</h1>
@@ -36,5 +42,10 @@
     </main>
 
     <script src="/static/app.js"></script>
+    <script>
+    if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/static/service-worker.js");
+    }
+    </script>
 </body>
 </html>
