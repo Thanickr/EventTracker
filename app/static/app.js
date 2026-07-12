@@ -6,41 +6,100 @@ const saveButton = document.getElementById("save-button");
 const statusMessage = document.getElementById("status-message");
 const eventsList = document.getElementById("events-list");
 
+function getCurrentLocalTimestamp() {
+    const now = new Date();
+    const offsetMilliseconds = now.getTimezoneOffset() * 60_000;
+
+    return new Date(now.getTime() - offsetMilliseconds)
+        .toISOString()
+        .slice(0, 19);
+}
+
+function formatEventTime(timestamp) {
+    const parsedTimestamp = new Date(timestamp);
+
+    if (Number.isNaN(parsedTimestamp.getTime())) {
+        return timestamp;
+    }
+
+    return parsedTimestamp.toLocaleString();
+}
+
 async function loadEvents() {
-    const response = await fetch("/events");
-    const events = await response.json();
+    try {
+        const events = await getLocalEvents();
 
-    eventsList.innerHTML = "";
+        eventsList.innerHTML = "";
 
-    if (events.length === 0) {
-        eventsList.textContent = "No events logged yet.";
+        if (events.length === 0) {
+            eventsList.textContent = "No events logged yet.";
+            return;
+        }
+
+        events.slice(0, 20).forEach((event) => {
+            const eventElement = document.createElement("div");
+            eventElement.className = "event";
+
+            const main = document.createElement("div");
+            main.className = "event-main";
+            main.textContent =
+                `${event.exercise_type} ${event.amount} ${event.unit}`;
+
+            const meta = document.createElement("div");
+            meta.className = "event-meta";
+            meta.textContent = formatEventTime(event.occurred_at);
+
+            eventElement.appendChild(main);
+            eventElement.appendChild(meta);
+
+            if (event.note) {
+                const note = document.createElement("div");
+                note.className = "event-meta";
+                note.textContent = event.note;
+                eventElement.appendChild(note);
+            }
+
+            eventsList.appendChild(eventElement);
+        });
+    } catch (error) {
+        eventsList.textContent = "Unable to load local events.";
+        console.error(error);
+    }
+}
+
+async function importExistingServerEvents() {
+    const localEventCount = await countLocalEvents();
+
+    if (localEventCount > 0) {
         return;
     }
 
-    events.slice(0, 5).forEach((event) => {
-        const eventElement = document.createElement("div");
-        eventElement.className = "event";
+    try {
+        const response = await fetch("/events");
 
-        const main = document.createElement("div");
-        main.className = "event-main";
-        main.textContent = `${event.exercise_type} ${event.amount} ${event.unit}`;
-
-        const meta = document.createElement("div");
-        meta.className = "event-meta";
-        meta.textContent = event.occurred_at;
-
-        eventElement.appendChild(main);
-        eventElement.appendChild(meta);
-
-        if (event.note) {
-            const note = document.createElement("div");
-            note.className = "event-meta";
-            note.textContent = event.note;
-            eventElement.appendChild(note);
+        if (!response.ok) {
+            return;
         }
 
-        eventsList.appendChild(eventElement);
-    });
+        const serverEvents = await response.json();
+
+        for (const serverEvent of serverEvents) {
+            await saveLocalEvent({
+                id: `server-${serverEvent.id}`,
+                created_at: serverEvent.occurred_at,
+                occurred_at: serverEvent.occurred_at,
+                event_type: serverEvent.event_type,
+                exercise_type: serverEvent.exercise_type,
+                amount: serverEvent.amount,
+                unit: serverEvent.unit,
+                note: serverEvent.note,
+                sync_status: "imported",
+            });
+        }
+    } catch (error) {
+        // The backend may be unavailable. That is now acceptable.
+        console.info("No server events imported.", error);
+    }
 }
 
 async function saveExerciseEvent() {
@@ -50,7 +109,8 @@ async function saveExerciseEvent() {
     const note = noteInput.value.trim();
 
     if (!exerciseType || Number.isNaN(amount) || !unit) {
-        statusMessage.textContent = "Exercise, amount, and unit are required.";
+        statusMessage.textContent =
+            "Exercise, amount, and unit are required.";
         return;
     }
 
@@ -58,24 +118,23 @@ async function saveExerciseEvent() {
     statusMessage.textContent = "Saving...";
 
     try {
-        const response = await fetch("/events", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                exercise_type: exerciseType,
-                amount: amount,
-                unit: unit,
-                note: note || null,
-            }),
-        });
+        const timestamp = getCurrentLocalTimestamp();
 
-        if (!response.ok) {
-            throw new Error("Save failed.");
-        }
+        const event = {
+            id: createEventId(),
+            created_at: timestamp,
+            occurred_at: timestamp,
+            event_type: "exercise",
+            exercise_type: exerciseType,
+            amount,
+            unit,
+            note: note || null,
+            sync_status: "local",
+        };
 
-        statusMessage.textContent = "Saved.";
+        await saveLocalEvent(event);
+
+        statusMessage.textContent = "Saved on this device.";
         noteInput.value = "";
 
         await loadEvents();
@@ -89,4 +148,9 @@ async function saveExerciseEvent() {
 
 saveButton.addEventListener("click", saveExerciseEvent);
 
-loadEvents();
+async function initializeApplication() {
+    await importExistingServerEvents();
+    await loadEvents();
+}
+
+initializeApplication();
