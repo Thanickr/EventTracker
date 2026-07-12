@@ -67,13 +67,6 @@ async function loadEvents() {
     }
 }
 
-async function importExistingServerEvents() {
-    const localEventCount = await countLocalEvents();
-
-    if (localEventCount > 0) {
-        return;
-    }
-
     try {
         const response = await fetch("/events");
 
@@ -149,7 +142,6 @@ async function saveExerciseEvent() {
 saveButton.addEventListener("click", saveExerciseEvent);
 
 async function initializeApplication() {
-    await importExistingServerEvents();
     await loadEvents();
 }
 
