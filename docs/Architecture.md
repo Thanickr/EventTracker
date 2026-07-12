@@ -65,3 +65,16 @@ Browser UI
 FastAPI backend
     ↓
 SQLite database
+
+## Revised Capture Architecture
+
+Event Tracker uses a phone-local-first capture architecture.
+
+```text
+iPhone PWA
+    ↓
+IndexedDB
+    ↓
+Future synchronization or export
+    ↓
+SQLite

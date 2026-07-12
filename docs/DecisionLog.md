@@ -103,3 +103,20 @@ This document records important project decisions and the reasoning behind them.
 **Reason:** Reducing launch friction directly supports long-term adherence. Offline logging is intentionally postponed because the current system already works when the local backend is reachable, and offline sync would add complexity before real usage justifies it.
 
 **Date:** 2026-07-05
+
+---
+
+## Decision 0011: Make Phone-Local Storage the Primary Capture Layer
+
+**Decision:** Event Tracker will store newly captured events directly in IndexedDB on the user's phone rather than requiring an immediate connection to the Windows FastAPI backend.
+
+**Reason:** Real-world testing showed that requiring the phone to remain connected to the home network created substantial friction and interfered with event capture. Long-term adherence takes priority over preserving the original backend-first capture architecture.
+
+**Consequences:**
+
+- Event capture will work without the Windows computer or home network.
+- SQLite remains the intended durable analysis and archival database.
+- A later synchronization or export process will transfer phone-local events into SQLite.
+- The application must be served over HTTPS for reliable service-worker-based offline launching.
+
+**Date:** 2026-07-12
