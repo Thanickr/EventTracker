@@ -1,19 +1,37 @@
-const exerciseTypeInput = document.getElementById("exercise-type");
-const amountInput = document.getElementById("amount");
-const unitInput = document.getElementById("unit");
-const noteInput = document.getElementById("note");
-const saveButton = document.getElementById("save-button");
-const statusMessage = document.getElementById("status-message");
-const eventsList = document.getElementById("events-list");
+const exerciseTypeInput =
+    document.getElementById("exercise-type");
+
+const amountInput =
+    document.getElementById("amount");
+
+const unitInput =
+    document.getElementById("unit");
+
+const noteInput =
+    document.getElementById("note");
+
+const saveButton =
+    document.getElementById("save-button");
+
+const statusMessage =
+    document.getElementById("status-message");
+
+const eventsList =
+    document.getElementById("events-list");
+
 
 function getCurrentLocalTimestamp() {
     const now = new Date();
-    const offsetMilliseconds = now.getTimezoneOffset() * 60_000;
+    const offsetMilliseconds =
+        now.getTimezoneOffset() * 60_000;
 
-    return new Date(now.getTime() - offsetMilliseconds)
+    return new Date(
+        now.getTime() - offsetMilliseconds
+    )
         .toISOString()
         .slice(0, 19);
 }
+
 
 function formatEventTime(timestamp) {
     const parsedTimestamp = new Date(timestamp);
@@ -25,6 +43,7 @@ function formatEventTime(timestamp) {
     return parsedTimestamp.toLocaleString();
 }
 
+
 async function loadEvents() {
     try {
         const events = await getLocalEvents();
@@ -32,78 +51,80 @@ async function loadEvents() {
         eventsList.innerHTML = "";
 
         if (events.length === 0) {
-            eventsList.textContent = "No events logged yet.";
+            eventsList.textContent =
+                "No events logged yet.";
             return;
         }
 
         events.slice(0, 20).forEach((event) => {
-            const eventElement = document.createElement("div");
+            const eventElement =
+                document.createElement("div");
+
             eventElement.className = "event";
 
-            const main = document.createElement("div");
+            const main =
+                document.createElement("div");
+
             main.className = "event-main";
             main.textContent =
-                `${event.exercise_type} ${event.amount} ${event.unit}`;
+                `${event.exercise_type} ` +
+                `${event.amount} ${event.unit}`;
 
-            const meta = document.createElement("div");
+            const meta =
+                document.createElement("div");
+
             meta.className = "event-meta";
-            meta.textContent = formatEventTime(event.occurred_at);
+            meta.textContent =
+                formatEventTime(event.occurred_at);
 
             eventElement.appendChild(main);
             eventElement.appendChild(meta);
 
             if (event.note) {
-                const note = document.createElement("div");
+                const note =
+                    document.createElement("div");
+
                 note.className = "event-meta";
                 note.textContent = event.note;
+
                 eventElement.appendChild(note);
             }
 
             eventsList.appendChild(eventElement);
         });
     } catch (error) {
-        eventsList.textContent = "Unable to load local events.";
-        console.error(error);
+        eventsList.textContent =
+            "Unable to load local events.";
+
+        console.error(
+            "Unable to load events:",
+            error
+        );
     }
 }
 
-    try {
-        const response = await fetch("/events");
-
-        if (!response.ok) {
-            return;
-        }
-
-        const serverEvents = await response.json();
-
-        for (const serverEvent of serverEvents) {
-            await saveLocalEvent({
-                id: `server-${serverEvent.id}`,
-                created_at: serverEvent.occurred_at,
-                occurred_at: serverEvent.occurred_at,
-                event_type: serverEvent.event_type,
-                exercise_type: serverEvent.exercise_type,
-                amount: serverEvent.amount,
-                unit: serverEvent.unit,
-                note: serverEvent.note,
-                sync_status: "imported",
-            });
-        }
-    } catch (error) {
-        // The backend may be unavailable. That is now acceptable.
-        console.info("No server events imported.", error);
-    }
-}
 
 async function saveExerciseEvent() {
-    const exerciseType = exerciseTypeInput.value.trim();
-    const amount = Number.parseFloat(amountInput.value);
-    const unit = unitInput.value.trim();
-    const note = noteInput.value.trim();
+    const exerciseType =
+        exerciseTypeInput.value.trim();
 
-    if (!exerciseType || Number.isNaN(amount) || !unit) {
+    const amount =
+        Number.parseFloat(amountInput.value);
+
+    const unit =
+        unitInput.value.trim();
+
+    const note =
+        noteInput.value.trim();
+
+    if (
+        !exerciseType ||
+        Number.isNaN(amount) ||
+        !unit
+    ) {
         statusMessage.textContent =
             "Exercise, amount, and unit are required.";
+
         return;
     }
 
@@ -111,7 +132,8 @@ async function saveExerciseEvent() {
     statusMessage.textContent = "Saving...";
 
     try {
-        const timestamp = getCurrentLocalTimestamp();
+        const timestamp =
+            getCurrentLocalTimestamp();
 
         const event = {
             id: createEventId(),
@@ -127,22 +149,34 @@ async function saveExerciseEvent() {
 
         await saveLocalEvent(event);
 
-        statusMessage.textContent = "Saved on this device.";
+        statusMessage.textContent =
+            "Saved on this device.";
+
         noteInput.value = "";
 
         await loadEvents();
     } catch (error) {
-        statusMessage.textContent = "Error saving event.";
-        console.error(error);
+        statusMessage.textContent =
+            "Error saving event.";
+
+        console.error(
+            "Unable to save event:",
+            error
+        );
     } finally {
         saveButton.disabled = false;
     }
 }
 
-saveButton.addEventListener("click", saveExerciseEvent);
 
 async function initializeApplication() {
     await loadEvents();
 }
+
+
+saveButton.addEventListener(
+    "click",
+    saveExerciseEvent
+);
 
 initializeApplication();
