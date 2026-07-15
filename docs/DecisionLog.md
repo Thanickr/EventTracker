@@ -132,3 +132,39 @@ This document records important project decisions and the reasoning behind them.
 **Privacy:** Export and import occur entirely on the user's device. Event data is not uploaded to GitHub or another remote service.
 
 **Date:** 2026-07-13
+
+---
+
+## Decision 0013: Treat Phone Storage as a Temporary Synchronization Queue
+
+**Decision:** IndexedDB on the phone will serve as a temporary capture and synchronization queue. SQLite on the user's computer will be the canonical long-term event store.
+
+**Synchronization model:**
+
+1. New phone events are marked as pending.
+2. The phone exports only pending events in an incremental sync package.
+3. The computer imports the package into SQLite using stable event IDs for duplicate protection.
+4. After the SQLite transaction succeeds, the computer produces a receipt containing the accepted event IDs.
+5. The phone imports the receipt and removes only the acknowledged events.
+
+**Reason:** The user does not want to repeatedly transfer the complete dataset between devices. Incremental synchronization minimizes file size and keeps the authoritative dataset in the local SQLite database.
+
+**Safety:** Events are not removed from the phone merely because they were exported. They are removed only after a successful SQLite import is acknowledged by a receipt.
+
+**Date:** 2026-07-15
+
+---
+
+## Decision 0014: Preserve SQLite Integer Keys and Add Stable Source Event IDs
+
+**Decision:** SQLite will retain its internal integer primary key. Phone-generated event IDs will be stored separately in a nullable, unique `source_event_id` field.
+
+**Reason:** Replacing the existing SQLite primary key would require rebuilding the table and would unnecessarily disrupt existing records. A separate stable source ID provides duplicate-safe incremental imports while preserving the database's current structure.
+
+**Behavior:**
+
+- SQLite-created legacy events may have a null `source_event_id`.
+- Phone-imported events must have a stable `source_event_id`.
+- A unique index prevents the same phone event from being inserted more than once.
+
+**Date:** 2026-07-15

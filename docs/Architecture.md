@@ -70,7 +70,6 @@ SQLite database
 
 Event Tracker uses a phone-local-first capture architecture.
 
-```text
 iPhone PWA
     ↓
 IndexedDB
@@ -83,9 +82,29 @@ SQLite
 
 Event records can be exported from IndexedDB into a versioned JSON backup file.
 
-```text
 IndexedDB
     ↓ Export
 Local JSON file
     ↓ Import
 IndexedDB
+
+## Incremental Phone-to-SQLite Synchronization
+
+The phone functions as a temporary event capture queue. SQLite is the canonical durable store.
+
+New phone event
+    ↓
+IndexedDB: pending
+    ↓
+Export pending sync package
+    ↓
+Import into SQLite transaction
+    ↓
+Generate acknowledgment receipt
+    ↓
+Import receipt on phone
+    ↓
+Delete acknowledged phone events
+
+I'm supposed to add this somewhere......
+| source_event_id | text | Stable device-generated ID used for duplicate-safe imports; nullable for legacy records |
