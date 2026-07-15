@@ -75,3 +75,14 @@ The system should not require a user account.
 ### NFR-005: Simple Maintenance
 
 The system should prefer simple, readable code over clever abstractions.
+
+## Incremental Synchronization
+
+The system shall:
+
+- mark newly captured phone events as pending
+- export only pending events during normal synchronization
+- import pending events into SQLite without duplication
+- generate a receipt after successful SQLite processing
+- remove phone events only after receipt acknowledgment
+- retain full backup and restore as a separate workflow

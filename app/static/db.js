@@ -181,3 +181,85 @@ async function importLocalEvents(events) {
         };
     });
 }
+
+async function getPendingEvents() {
+    const events = await getLocalEvents();
+
+    return events.filter(
+        (event) => event.sync_status === "pending"
+    );
+}
+
+
+async function deleteAcknowledgedEvents(eventIds) {
+    if (!Array.isArray(eventIds)) {
+        throw new TypeError(
+            "Acknowledged event IDs must be an array."
+        );
+    }
+
+    const uniqueEventIds = [
+        ...new Set(
+            eventIds.filter(
+                (eventId) =>
+                    typeof eventId === "string" &&
+                    eventId.trim()
+            )
+        ),
+    ];
+
+    const database = await openDatabase();
+
+    return new Promise((resolve, reject) => {
+        const transaction = database.transaction(
+            EVENTS_STORE,
+            "readwrite"
+        );
+
+        const store =
+            transaction.objectStore(EVENTS_STORE);
+
+        let deletedCount = 0;
+
+        for (const eventId of uniqueEventIds) {
+            const getRequest = store.get(eventId);
+
+            getRequest.onsuccess = () => {
+                const event = getRequest.result;
+
+                if (
+                    event &&
+                    event.sync_status === "pending"
+                ) {
+                    store.delete(eventId);
+                    deletedCount += 1;
+                }
+            };
+        }
+
+        transaction.oncomplete = () => {
+            database.close();
+            resolve(deletedCount);
+        };
+
+        transaction.onerror = () => {
+            database.close();
+            reject(
+                transaction.error ||
+                new Error(
+                    "Unable to remove acknowledged events."
+                )
+            );
+        };
+
+        transaction.onabort = () => {
+            database.close();
+            reject(
+                transaction.error ||
+                new Error(
+                    "Acknowledgment transaction was aborted."
+                )
+            );
+        };
+    });
+}

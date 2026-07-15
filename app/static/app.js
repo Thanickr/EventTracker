@@ -31,6 +31,26 @@ const importFileInput =
 const dataStatusMessage =
     document.getElementById("data-status-message");
 
+const exportPendingButton =
+    document.getElementById(
+        "export-pending-button"
+    );
+
+const applyReceiptButton =
+    document.getElementById(
+        "apply-receipt-button"
+    );
+
+const receiptFileInput =
+    document.getElementById(
+        "receipt-file"
+    );
+
+const syncStatusMessage =
+    document.getElementById(
+        "sync-status-message"
+    );
+
 function getCurrentLocalTimestamp() {
     const now = new Date();
     const offsetMilliseconds =
@@ -155,7 +175,7 @@ async function saveExerciseEvent() {
             amount,
             unit,
             note: note || null,
-            sync_status: "local",
+            sync_status: "pending",
         };
 
         await saveLocalEvent(event);
@@ -332,5 +352,203 @@ importFileInput.addEventListener(
     "change",
     importData
 );
+
+exportPendingButton.addEventListener(
+    "click",
+    exportPendingEvents
+);
+
+applyReceiptButton.addEventListener(
+    "click",
+    chooseReceiptFile
+);
+
+receiptFileInput.addEventListener(
+    "change",
+    applySyncReceipt
+);
+
+function createSyncPackageFilename() {
+    const timestamp = new Date()
+        .toISOString()
+        .replaceAll(":", "-")
+        .replaceAll(".", "-");
+
+    return (
+        `event-tracker-sync-package-` +
+        `${timestamp}.json`
+    );
+}
+
+
+function downloadJsonFile(data, filename) {
+    const jsonText = JSON.stringify(
+        data,
+        null,
+        2
+    );
+
+    const fileBlob = new Blob(
+        [jsonText],
+        {
+            type: "application/json",
+        }
+    );
+
+    const fileUrl =
+        URL.createObjectURL(fileBlob);
+
+    const downloadLink =
+        document.createElement("a");
+
+    downloadLink.href = fileUrl;
+    downloadLink.download = filename;
+
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    downloadLink.remove();
+
+    URL.revokeObjectURL(fileUrl);
+}
+
+
+async function exportPendingEvents() {
+    exportPendingButton.disabled = true;
+
+    syncStatusMessage.textContent =
+        "Preparing sync package...";
+
+    try {
+        const pendingEvents =
+            await getPendingEvents();
+
+        if (pendingEvents.length === 0) {
+            syncStatusMessage.textContent =
+                "No pending events to export.";
+            return;
+        }
+
+        const syncPackage = {
+            format:
+                "event-tracker-sync-package",
+            version: 1,
+            package_id: createEventId(),
+            exported_at:
+                new Date().toISOString(),
+            event_count:
+                pendingEvents.length,
+            events: pendingEvents,
+        };
+
+        downloadJsonFile(
+            syncPackage,
+            createSyncPackageFilename()
+        );
+
+        syncStatusMessage.textContent =
+            `Exported ${pendingEvents.length} ` +
+            `pending event` +
+            `${pendingEvents.length === 1 ? "" : "s"}.`;
+    } catch (error) {
+        syncStatusMessage.textContent =
+            "Unable to export pending events.";
+
+        console.error(
+            "Pending-event export failed:",
+            error
+        );
+    } finally {
+        exportPendingButton.disabled = false;
+    }
+}
+
+
+function chooseReceiptFile() {
+    receiptFileInput.value = "";
+    receiptFileInput.click();
+}
+
+function validateSyncReceipt(receipt) {
+    if (
+        !receipt ||
+        receipt.format !==
+            "event-tracker-sync-receipt" ||
+        receipt.version !== 1 ||
+        typeof receipt.package_id !== "string" ||
+        !Array.isArray(
+            receipt.acknowledged_event_ids
+        )
+    ) {
+        throw new Error(
+            "This is not a valid Event Tracker sync receipt."
+        );
+    }
+
+    const invalidId =
+        receipt.acknowledged_event_ids.some(
+            (eventId) =>
+                typeof eventId !== "string" ||
+                !eventId.trim()
+        );
+
+    if (invalidId) {
+        throw new Error(
+            "The receipt contains an invalid event ID."
+        );
+    }
+}
+
+
+async function applySyncReceipt(event) {
+    const selectedFile =
+        event.target.files[0];
+
+    if (!selectedFile) {
+        return;
+    }
+
+    applyReceiptButton.disabled = true;
+
+    syncStatusMessage.textContent =
+        "Applying synchronization receipt...";
+
+    try {
+        const fileText =
+            await selectedFile.text();
+
+        const receipt =
+            JSON.parse(fileText);
+
+        validateSyncReceipt(receipt);
+
+        const deletedCount =
+            await deleteAcknowledgedEvents(
+                receipt.acknowledged_event_ids
+            );
+
+        await loadEvents();
+
+        syncStatusMessage.textContent =
+            `Confirmed ${receipt.acknowledged_event_ids.length} ` +
+            `event` +
+            `${
+                receipt.acknowledged_event_ids.length === 1
+                    ? ""
+                    : "s"
+            }; removed ${deletedCount} pending ` +
+            `event${deletedCount === 1 ? "" : "s"} ` +
+            `from this device.`;
+    } catch (error) {
+        syncStatusMessage.textContent =
+            "Unable to apply this sync receipt.";
+
+        console.error(
+            "Receipt application failed:",
+            error
+        );
+    } finally {
+        applyReceiptButton.disabled = false;
+    }
+}
 
 initializeApplication();

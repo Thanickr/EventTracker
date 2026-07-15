@@ -105,3 +105,23 @@ button:active {
     border: 1px solid #ccc;
     margin-top: 10px;
 }
+
+.sync-section,
+.backup-section {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid #ddd;
+}
+
+.sync-section h3,
+.backup-section h3 {
+    margin-top: 0;
+    margin-bottom: 6px;
+}
+
+.section-description {
+    margin-top: 0;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.4;
+}

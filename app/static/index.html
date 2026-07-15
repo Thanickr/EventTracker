@@ -75,13 +75,57 @@
                 class="events-list"
             ></div>
 
-            <div class="data-actions">
+            <div class="sync-section">
+                <h3>Transfer to Computer</h3>
+
+                <p class="section-description">
+                    Export only events that have not yet been added
+                    to SQLite.
+                </p>
+
+                <button
+                    id="export-pending-button"
+                    class="secondary-button"
+                    type="button"
+                >
+                    Export Pending Events
+                </button>
+
+                <button
+                    id="apply-receipt-button"
+                    class="secondary-button"
+                    type="button"
+                >
+                    Apply Sync Receipt
+                </button>
+
+                <input
+                    id="receipt-file"
+                    type="file"
+                    accept="application/json,.json"
+                    hidden
+                />
+
+                <p
+                    id="sync-status-message"
+                    class="status"
+                ></p>
+            </div>
+
+            <div class="backup-section">
+                <h3>Backup and Restore</h3>
+
+                <p class="section-description">
+                    Full backups contain every event currently
+                    stored on this device.
+                </p>
+
                 <button
                     id="export-button"
                     class="secondary-button"
                     type="button"
                 >
-                    Export Data
+                    Export Full Backup
                 </button>
 
                 <button
@@ -89,7 +133,7 @@
                     class="secondary-button"
                     type="button"
                 >
-                    Import Data
+                    Restore Full Backup
                 </button>
 
                 <input

@@ -168,3 +168,16 @@ This document records important project decisions and the reasoning behind them.
 - A unique index prevents the same phone event from being inserted more than once.
 
 **Date:** 2026-07-15
+
+---
+
+## Decision 0015: Separate Normal Synchronization from Full Backup
+
+**Decision:** The phone interface will expose two separate data workflows:
+
+1. incremental synchronization for pending events
+2. full backup and restore for disaster recovery
+
+**Reason:** Normal synchronization should transfer only new records and clear them only after SQLite acknowledgment. Full backups serve a different purpose and must not alter synchronization state.
+
+**Date:** 2026-07-15
