@@ -120,3 +120,15 @@ This document records important project decisions and the reasoning behind them.
 - The application must be served over HTTPS for reliable service-worker-based offline launching.
 
 **Date:** 2026-07-12
+
+---
+
+## Decision 0012: Use Local JSON Files for Backup and Transfer
+
+**Decision:** Event Tracker will support exporting and importing local event data as a versioned JSON backup file.
+
+**Reason:** IndexedDB data is local to a particular browser origin and device. A portable backup is required before relying on phone-local storage for long-term collection.
+
+**Privacy:** Export and import occur entirely on the user's device. Event data is not uploaded to GitHub or another remote service.
+
+**Date:** 2026-07-13

@@ -19,6 +19,17 @@ const statusMessage =
 const eventsList =
     document.getElementById("events-list");
 
+const exportButton =
+    document.getElementById("export-button");
+
+const importButton =
+    document.getElementById("import-button");
+
+const importFileInput =
+    document.getElementById("import-file");
+
+const dataStatusMessage =
+    document.getElementById("data-status-message");
 
 function getCurrentLocalTimestamp() {
     const now = new Date();
@@ -169,6 +180,134 @@ async function saveExerciseEvent() {
 }
 
 
+function createBackupFilename() {
+    const date = new Date()
+        .toISOString()
+        .slice(0, 10);
+
+    return `event-tracker-backup-${date}.json`;
+}
+
+
+async function exportData() {
+    exportButton.disabled = true;
+    dataStatusMessage.textContent = "Preparing backup...";
+
+    try {
+        const events = await exportLocalEvents();
+
+        const backup = {
+            format: "event-tracker-backup",
+            version: 1,
+            exported_at: new Date().toISOString(),
+            event_count: events.length,
+            events,
+        };
+
+        const backupText = JSON.stringify(
+            backup,
+            null,
+            2
+        );
+
+        const backupBlob = new Blob(
+            [backupText],
+            {
+                type: "application/json",
+            }
+        );
+
+        const backupUrl =
+            URL.createObjectURL(backupBlob);
+
+        const downloadLink =
+            document.createElement("a");
+
+        downloadLink.href = backupUrl;
+        downloadLink.download =
+            createBackupFilename();
+
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        downloadLink.remove();
+
+        URL.revokeObjectURL(backupUrl);
+
+        dataStatusMessage.textContent =
+            `Exported ${events.length} events.`;
+    } catch (error) {
+        dataStatusMessage.textContent =
+            "Unable to export data.";
+
+        console.error(
+            "Export failed:",
+            error
+        );
+    } finally {
+        exportButton.disabled = false;
+    }
+}
+
+
+function chooseImportFile() {
+    importFileInput.value = "";
+    importFileInput.click();
+}
+
+
+async function importData(event) {
+    const selectedFile =
+        event.target.files[0];
+
+    if (!selectedFile) {
+        return;
+    }
+
+    importButton.disabled = true;
+    dataStatusMessage.textContent =
+        "Importing backup...";
+
+    try {
+        const fileText =
+            await selectedFile.text();
+
+        const backup =
+            JSON.parse(fileText);
+
+        if (
+            backup.format !==
+                "event-tracker-backup" ||
+            backup.version !== 1 ||
+            !Array.isArray(backup.events)
+        ) {
+            throw new Error(
+                "This is not a valid Event Tracker backup."
+            );
+        }
+
+        const importedCount =
+            await importLocalEvents(
+                backup.events
+            );
+
+        await loadEvents();
+
+        dataStatusMessage.textContent =
+            `Imported ${importedCount} events.`;
+    } catch (error) {
+        dataStatusMessage.textContent =
+            "Unable to import this backup.";
+
+        console.error(
+            "Import failed:",
+            error
+        );
+    } finally {
+        importButton.disabled = false;
+    }
+}
+
+
 async function initializeApplication() {
     await loadEvents();
 }
@@ -177,6 +316,21 @@ async function initializeApplication() {
 saveButton.addEventListener(
     "click",
     saveExerciseEvent
+);
+
+exportButton.addEventListener(
+    "click",
+    exportData
+);
+
+importButton.addEventListener(
+    "click",
+    chooseImportFile
+);
+
+importFileInput.addEventListener(
+    "change",
+    importData
 );
 
 initializeApplication();

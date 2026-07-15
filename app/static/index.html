@@ -69,7 +69,41 @@
 
         <section class="card">
             <h2>Recent Events</h2>
-            <div id="events-list" class="events-list"></div>
+
+            <div
+                id="events-list"
+                class="events-list"
+            ></div>
+
+            <div class="data-actions">
+                <button
+                    id="export-button"
+                    class="secondary-button"
+                    type="button"
+                >
+                    Export Data
+                </button>
+
+                <button
+                    id="import-button"
+                    class="secondary-button"
+                    type="button"
+                >
+                    Import Data
+                </button>
+
+                <input
+                    id="import-file"
+                    type="file"
+                    accept="application/json,.json"
+                    hidden
+                />
+
+                <p
+                    id="data-status-message"
+                    class="status"
+                ></p>
+            </div>
         </section>
     </main>
 

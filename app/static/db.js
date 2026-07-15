@@ -122,3 +122,62 @@ async function countLocalEvents() {
         };
     });
 }
+
+async function exportLocalEvents() {
+    return getLocalEvents();
+}
+
+
+async function importLocalEvents(events) {
+    if (!Array.isArray(events)) {
+        throw new TypeError("Imported data must contain an events array.");
+    }
+
+    const database = await openDatabase();
+
+    return new Promise((resolve, reject) => {
+        const transaction = database.transaction(
+            EVENTS_STORE,
+            "readwrite"
+        );
+
+        const store = transaction.objectStore(EVENTS_STORE);
+
+        let importedCount = 0;
+
+        for (const event of events) {
+            if (
+                !event ||
+                typeof event.id !== "string" ||
+                typeof event.occurred_at !== "string" ||
+                typeof event.event_type !== "string"
+            ) {
+                transaction.abort();
+                reject(
+                    new Error("The backup contains an invalid event.")
+                );
+                return;
+            }
+
+            store.put(event);
+            importedCount += 1;
+        }
+
+        transaction.oncomplete = () => {
+            database.close();
+            resolve(importedCount);
+        };
+
+        transaction.onerror = () => {
+            database.close();
+            reject(
+                transaction.error ||
+                new Error("Unable to import events.")
+            );
+        };
+
+        transaction.onabort = () => {
+            database.close();
+        };
+    });
+}

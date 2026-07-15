@@ -94,3 +94,14 @@ button:active {
     font-size: 14px;
     color: #666;
 }
+
+.data-actions {
+    margin-top: 18px;
+}
+
+.secondary-button {
+    background: #e8e8e8;
+    color: #222;
+    border: 1px solid #ccc;
+    margin-top: 10px;
+}

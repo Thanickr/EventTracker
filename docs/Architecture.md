@@ -78,3 +78,14 @@ IndexedDB
 Future synchronization or export
     ↓
 SQLite
+
+## Local Backup and Transfer
+
+Event records can be exported from IndexedDB into a versioned JSON backup file.
+
+```text
+IndexedDB
+    ↓ Export
+Local JSON file
+    ↓ Import
+IndexedDB
