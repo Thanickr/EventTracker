@@ -25,3 +25,10 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Generated synchronization receipts
+database/sync_receipts/
+
+# Local synchronization and backup files
+*-sync-package.json
+event-tracker-backup-*.json
