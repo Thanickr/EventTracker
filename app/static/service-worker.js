@@ -3,7 +3,7 @@
 //
 // Caches the static application shell so the logger can open offline.
 
-const CACHE_NAME = "event-tracker-v0-6";
+const CACHE_NAME = "event-tracker-v0-7";
 
 const STATIC_ASSETS = [
     "./",

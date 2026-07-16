@@ -263,3 +263,70 @@ async function deleteAcknowledgedEvents(eventIds) {
         };
     });
 }
+
+async function countStoredEvents() {
+    const database = await openDatabase();
+
+    return new Promise((resolve, reject) => {
+        const transaction = database.transaction(
+            EVENTS_STORE,
+            "readonly"
+        );
+
+        const store = transaction.objectStore(EVENTS_STORE);
+        const request = store.count();
+
+        request.onsuccess = () => {
+            database.close();
+            resolve(request.result);
+        };
+
+        request.onerror = () => {
+            database.close();
+            reject(
+                request.error ||
+                new Error("Unable to count local events.")
+            );
+        };
+    });
+}
+
+
+async function clearAllLocalEvents() {
+    const database = await openDatabase();
+
+    return new Promise((resolve, reject) => {
+        const transaction = database.transaction(
+            EVENTS_STORE,
+            "readwrite"
+        );
+
+        const store = transaction.objectStore(EVENTS_STORE);
+        const request = store.clear();
+
+        request.onsuccess = () => {
+            // Wait for transaction completion before reporting success.
+        };
+
+        transaction.oncomplete = () => {
+            database.close();
+            resolve();
+        };
+
+        transaction.onerror = () => {
+            database.close();
+            reject(
+                transaction.error ||
+                new Error("Unable to clear local events.")
+            );
+        };
+
+        transaction.onabort = () => {
+            database.close();
+            reject(
+                transaction.error ||
+                new Error("Local event deletion was aborted.")
+            );
+        };
+    });
+}

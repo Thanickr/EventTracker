@@ -68,7 +68,23 @@
         </section>
 
         <section class="card">
-            <h2>Recent Events</h2>
+            <div class="section-heading-row">
+                <div>
+                    <h2>Recent Events</h2>
+                    <p
+                        id="local-event-count"
+                        class="event-count"
+                    ></p>
+                </div>
+
+                <button
+                    id="toggle-events-button"
+                    class="text-button"
+                    type="button"
+                >
+                    Hide
+                </button>
+            </div>
 
             <div
                 id="events-list"
@@ -148,6 +164,29 @@
                     class="status"
                 ></p>
             </div>
+
+            <div class="device-storage-section">
+                <h3>Device Storage</h3>
+
+                <p class="section-description">
+                    Delete every event currently stored on this device.
+                    This does not affect events already stored in SQLite.
+                </p>
+
+                <button
+                    id="clear-local-events-button"
+                    class="danger-button"
+                    type="button"
+                >
+                    Clear Local Events
+                </button>
+
+                <p
+                    id="device-storage-status"
+                    class="status"
+                ></p>
+            </div>
+
         </section>
     </main>
 

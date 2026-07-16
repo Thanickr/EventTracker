@@ -51,6 +51,22 @@ const syncStatusMessage =
         "sync-status-message"
     );
 
+const localEventCount =
+    document.getElementById("local-event-count");
+
+const toggleEventsButton =
+    document.getElementById("toggle-events-button");
+
+const clearLocalEventsButton =
+    document.getElementById(
+        "clear-local-events-button"
+    );
+
+const deviceStorageStatus =
+    document.getElementById(
+        "device-storage-status"
+    );
+
 function getCurrentLocalTimestamp() {
     const now = new Date();
     const offsetMilliseconds =
@@ -74,16 +90,56 @@ function formatEventTime(timestamp) {
     return parsedTimestamp.toLocaleString();
 }
 
+const EVENTS_VISIBILITY_KEY =
+    "event-tracker-show-recent-events";
+
+
+function recentEventsAreVisible() {
+    const savedValue =
+        localStorage.getItem(EVENTS_VISIBILITY_KEY);
+
+    return savedValue !== "false";
+}
+
+
+function applyRecentEventsVisibility() {
+    const isVisible = recentEventsAreVisible();
+
+    eventsList.hidden = !isVisible;
+    toggleEventsButton.textContent =
+        isVisible ? "Hide" : "Show";
+}
+
+
+function toggleRecentEventsVisibility() {
+    const newVisibility =
+        !recentEventsAreVisible();
+
+    localStorage.setItem(
+        EVENTS_VISIBILITY_KEY,
+        String(newVisibility)
+    );
+
+    applyRecentEventsVisibility();
+}
 
 async function loadEvents() {
     try {
         const events = await getLocalEvents();
+        const eventCount = events.length;
+
+        localEventCount.textContent =
+            eventCount === 0
+                ? "No events stored on this device."
+                : `${eventCount} event` +
+                  `${eventCount === 1 ? "" : "s"} ` +
+                  `stored on this device.`;
 
         eventsList.innerHTML = "";
 
-        if (events.length === 0) {
+        if (eventCount === 0) {
             eventsList.textContent =
-                "No events logged yet.";
+                "No recent events.";
             return;
         }
 
@@ -124,6 +180,9 @@ async function loadEvents() {
             eventsList.appendChild(eventElement);
         });
     } catch (error) {
+        localEventCount.textContent =
+            "Unable to count local events.";
+
         eventsList.textContent =
             "Unable to load local events.";
 
@@ -329,6 +388,7 @@ async function importData(event) {
 
 
 async function initializeApplication() {
+    applyRecentEventsVisibility();
     await loadEvents();
 }
 
@@ -366,6 +426,16 @@ applyReceiptButton.addEventListener(
 receiptFileInput.addEventListener(
     "change",
     applySyncReceipt
+);
+
+toggleEventsButton.addEventListener(
+    "click",
+    toggleRecentEventsVisibility
+);
+
+clearLocalEventsButton.addEventListener(
+    "click",
+    clearLocalEvents
 );
 
 function createSyncPackageFilename() {
@@ -528,16 +598,25 @@ async function applySyncReceipt(event) {
 
         await loadEvents();
 
+        const remainingEventCount =
+            await countStoredEvents();
+
         syncStatusMessage.textContent =
-            `Confirmed ${receipt.acknowledged_event_ids.length} ` +
-            `event` +
-            `${
-                receipt.acknowledged_event_ids.length === 1
-                    ? ""
-                    : "s"
-            }; removed ${deletedCount} pending ` +
-            `event${deletedCount === 1 ? "" : "s"} ` +
-            `from this device.`;
+            `Sync complete. Removed ${deletedCount} ` +
+            `acknowledged event` +
+            `${deletedCount === 1 ? "" : "s"} ` +
+            `from this device.` +
+            (
+                remainingEventCount === 0
+                    ? " No events remain locally."
+                    : ` ${remainingEventCount} newer or ` +
+                    `unacknowledged event` +
+                    `${
+                        remainingEventCount === 1
+                            ? ""
+                            : "s"
+                    } remain locally.`
+            );
     } catch (error) {
         syncStatusMessage.textContent =
             "Unable to apply this sync receipt.";
@@ -548,6 +627,66 @@ async function applySyncReceipt(event) {
         );
     } finally {
         applyReceiptButton.disabled = false;
+    }
+}
+
+async function clearLocalEvents() {
+    let eventCount;
+
+    try {
+        eventCount = await countStoredEvents();
+    } catch (error) {
+        deviceStorageStatus.textContent =
+            "Unable to inspect local storage.";
+
+        console.error(
+            "Unable to count events before clearing:",
+            error
+        );
+        return;
+    }
+
+    if (eventCount === 0) {
+        deviceStorageStatus.textContent =
+            "No local events to clear.";
+        return;
+    }
+
+    const confirmed = window.confirm(
+        `Delete all ${eventCount} event` +
+        `${eventCount === 1 ? "" : "s"} ` +
+        `currently stored on this device?\n\n` +
+        `This cannot be undone unless the events ` +
+        `have already been synchronized or backed up.`
+    );
+
+    if (!confirmed) {
+        deviceStorageStatus.textContent =
+            "Local deletion canceled.";
+        return;
+    }
+
+    clearLocalEventsButton.disabled = true;
+    deviceStorageStatus.textContent =
+        "Clearing local events...";
+
+    try {
+        await clearAllLocalEvents();
+        await loadEvents();
+
+        deviceStorageStatus.textContent =
+            `Deleted ${eventCount} local event` +
+            `${eventCount === 1 ? "" : "s"}.`;
+    } catch (error) {
+        deviceStorageStatus.textContent =
+            "Unable to clear local events.";
+
+        console.error(
+            "Unable to clear IndexedDB:",
+            error
+        );
+    } finally {
+        clearLocalEventsButton.disabled = false;
     }
 }
 

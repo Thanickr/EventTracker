@@ -86,3 +86,14 @@ The system shall:
 - generate a receipt after successful SQLite processing
 - remove phone events only after receipt acknowledgment
 - retain full backup and restore as a separate workflow
+
+## Local Storage Cleanup and Privacy
+
+The system shall:
+
+- remove every receipt-acknowledged event from phone storage
+- preserve newer events not included in the acknowledged package
+- display the number of events currently stored on the device
+- allow the recent-events list to be hidden without deleting data
+- remember the device's recent-events visibility preference
+- allow all local events to be cleared manually after explicit confirmation

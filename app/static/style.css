@@ -125,3 +125,52 @@ button:active {
     font-size: 14px;
     line-height: 1.4;
 }
+
+.section-heading-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.section-heading-row h2 {
+    margin-top: 0;
+    margin-bottom: 4px;
+}
+
+.event-count {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.text-button {
+    width: auto;
+    margin-top: 0;
+    padding: 8px 10px;
+    background: transparent;
+    color: #444;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    font-weight: normal;
+}
+
+.device-storage-section {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid #ddd;
+}
+
+.device-storage-section h3 {
+    margin-top: 0;
+    margin-bottom: 6px;
+}
+
+.danger-button {
+    background: #8f1d1d;
+    color: white;
+}
+
+.events-list[hidden] {
+    display: none;
+}

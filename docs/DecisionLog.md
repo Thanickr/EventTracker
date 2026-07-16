@@ -181,3 +181,21 @@ This document records important project decisions and the reasoning behind them.
 **Reason:** Normal synchronization should transfer only new records and clear them only after SQLite acknowledgment. Full backups serve a different purpose and must not alter synchronization state.
 
 **Date:** 2026-07-15
+
+---
+
+## Decision 0016: Clear Acknowledged Phone Events and Separate Visibility from Deletion
+
+**Decision:** Events acknowledged by a valid SQLite synchronization receipt will be removed from IndexedDB. The phone should normally return to an empty local queue after synchronization.
+
+**Safety:** Events created after a sync package was exported are not removed by that package's receipt.
+
+**Privacy controls:**
+
+- The recent-events list may be hidden without changing stored data.
+- The visibility preference is retained locally.
+- A separate confirmed action may delete all events from phone storage.
+
+**Reason:** The phone is a temporary capture queue, not the canonical archive. Visibility and deletion are separate concerns and must not be conflated.
+
+**Date:** 2026-07-15
