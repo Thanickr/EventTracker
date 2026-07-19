@@ -97,3 +97,16 @@ The system shall:
 - allow the recent-events list to be hidden without deleting data
 - remember the device's recent-events visibility preference
 - allow all local events to be cleared manually after explicit confirmation
+
+## Desktop Synchronization Console
+
+The system shall provide a local desktop interface that:
+
+- accepts a phone-generated synchronization package
+- validates the package before database changes
+- imports new events into SQLite transactionally
+- skips duplicate source event IDs
+- reports imported and already-present event counts
+- generates and automatically downloads a synchronization receipt
+- operates only on the user's local computer
+- does not require manual terminal commands during normal use

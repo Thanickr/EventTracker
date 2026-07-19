@@ -199,3 +199,24 @@ This document records important project decisions and the reasoning behind them.
 **Reason:** The phone is a temporary capture queue, not the canonical archive. Visibility and deletion are separate concerns and must not be conflated.
 
 **Date:** 2026-07-15
+
+---
+
+## Decision 0017: Provide a Local Browser-Based Desktop Sync Console
+
+**Decision:** Normal phone-to-SQLite synchronization will use a local browser interface rather than requiring terminal commands.
+
+**Workflow:**
+
+1. The user launches the synchronization console from a Windows batch file.
+2. The user selects a phone-generated sync package.
+3. The local utility validates and imports events into SQLite.
+4. The utility reports import counts.
+5. A synchronization receipt downloads automatically.
+6. The receipt is applied on the phone to clear acknowledged events.
+
+**Privacy:** The synchronization console binds only to `127.0.0.1`. It is available only on the user's computer and does not transmit events externally.
+
+**Reason:** Terminal-based importing was the largest remaining synchronization friction point.
+
+**Date:** 2026-07-16

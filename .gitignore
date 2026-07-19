@@ -32,3 +32,6 @@ database/sync_receipts/
 # Local synchronization and backup files
 *-sync-package.json
 event-tracker-backup-*.json
+
+# Temporary desktop sync uploads
+*.tmp
