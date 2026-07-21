@@ -174,3 +174,31 @@ button:active {
 .events-list[hidden] {
     display: none;
 }
+
+.time-section {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid #ddd;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.checkbox-label input {
+    width: auto;
+    margin: 0;
+}
+
+.custom-time-fields {
+    margin-top: 14px;
+}
+
+.custom-time-fields[hidden] {
+    display: none;
+}

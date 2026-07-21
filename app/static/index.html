@@ -28,14 +28,15 @@
 <body>
     <main class="app">
         <h1>Event Tracker</h1>
-        <p class="subtitle">Log exercise quickly.</p>
+        <p class="subtitle">Capture an event quickly.</p>
 
         <section class="card">
-            <label for="exercise-type">Exercise</label>
+            <label for="event-name">Event</label>
             <input
-                id="exercise-type"
+                id="event-name"
                 type="text"
-                value="walk"
+                placeholder="What happened?"
+                autocomplete="off"
             />
 
             <label for="amount">Amount</label>
@@ -50,21 +51,53 @@
             <input
                 id="unit"
                 type="text"
-                value="mile"
+                value="event"
+                autocomplete="off"
             />
 
-            <label for="note">
-                Note <span class="optional">(optional)</span>
+            <label for="details">
+                Details <span class="optional">(optional)</span>
             </label>
-            <input
-                id="note"
+                <input
+                id="details"
                 type="text"
-                placeholder="Optional note"
+                placeholder="Optional details"
+                autocomplete="off"
             />
 
-            <button id="save-button">Save Exercise</button>
+            <div class="time-section">
+                <label class="checkbox-label">
+                    <input
+                        id="use-custom-time"
+                        type="checkbox"
+                    />
+                    Enter a different event time
+                </label>
 
-            <p id="status-message" class="status"></p>
+                <div
+                    id="custom-time-fields"
+                    class="custom-time-fields"
+                    hidden
+                >
+                    <label for="occurred-at">
+                        Event date and time
+                    </label>
+
+                    <input
+                        id="occurred-at"
+                        type="datetime-local"
+                    />
+                </div>
+            </div>
+
+            <button id="save-button">
+                Save Event
+            </button>
+
+            <p
+                id="status-message"
+                class="status"
+            ></p>
         </section>
 
         <section class="card">

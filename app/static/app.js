@@ -1,14 +1,23 @@
-const exerciseTypeInput =
-    document.getElementById("exercise-type");
+const eventNameInput =
+    document.getElementById("event-name");
+
+const detailsInput =
+    document.getElementById("details");
+
+const useCustomTimeInput =
+    document.getElementById("use-custom-time");
+
+const customTimeFields =
+    document.getElementById("custom-time-fields");
+
+const occurredAtInput =
+    document.getElementById("occurred-at");
 
 const amountInput =
     document.getElementById("amount");
 
 const unitInput =
     document.getElementById("unit");
-
-const noteInput =
-    document.getElementById("note");
 
 const saveButton =
     document.getElementById("save-button");
@@ -90,6 +99,61 @@ function formatEventTime(timestamp) {
     return parsedTimestamp.toLocaleString();
 }
 
+function getDateTimeLocalValue(date = new Date()) {
+    const offsetMilliseconds =
+        date.getTimezoneOffset() * 60_000;
+
+    return new Date(
+        date.getTime() - offsetMilliseconds
+    )
+        .toISOString()
+        .slice(0, 16);
+}
+
+
+function selectedOccurredAt() {
+    if (!useCustomTimeInput.checked) {
+        return getCurrentLocalTimestamp();
+    }
+
+    const customTimestamp =
+        occurredAtInput.value.trim();
+
+    if (!customTimestamp) {
+        throw new Error(
+            "Choose the event date and time."
+        );
+    }
+
+    // datetime-local returns local time without a zone.
+    // Seconds are added to match the existing timestamp format.
+    return `${customTimestamp}:00`;
+}
+
+
+function toggleCustomTimeFields() {
+    const useCustomTime =
+        useCustomTimeInput.checked;
+
+    customTimeFields.hidden =
+        !useCustomTime;
+
+    if (
+        useCustomTime &&
+        !occurredAtInput.value
+    ) {
+        occurredAtInput.value =
+            getDateTimeLocalValue();
+    }
+}
+
+
+function resetTimestampControls() {
+    useCustomTimeInput.checked = false;
+    occurredAtInput.value = "";
+    customTimeFields.hidden = true;
+}
+
 const EVENTS_VISIBILITY_KEY =
     "event-tracker-show-recent-events";
 
@@ -153,9 +217,17 @@ async function loadEvents() {
                 document.createElement("div");
 
             main.className = "event-main";
-            main.textContent =
-                `${event.exercise_type} ` +
-                `${event.amount} ${event.unit}`;
+            if (
+                event.unit === "event" &&
+                event.amount === 1
+            ) {
+                main.textContent =
+                    event.exercise_type;
+            } else {
+                main.textContent =
+                    `${event.exercise_type} ` +
+                    `${event.amount} ${event.unit}`;
+            }
 
             const meta =
                 document.createElement("div");
@@ -194,9 +266,9 @@ async function loadEvents() {
 }
 
 
-async function saveExerciseEvent() {
-    const exerciseType =
-        exerciseTypeInput.value.trim();
+async function saveEvent() {
+    const eventName =
+        eventNameInput.value.trim();
 
     const amount =
         Number.parseFloat(amountInput.value);
@@ -204,16 +276,16 @@ async function saveExerciseEvent() {
     const unit =
         unitInput.value.trim();
 
-    const note =
-        noteInput.value.trim();
+    const details =
+        detailsInput.value.trim();
 
     if (
-        !exerciseType ||
+        !eventName ||
         Number.isNaN(amount) ||
         !unit
     ) {
         statusMessage.textContent =
-            "Exercise, amount, and unit are required.";
+            "Event, amount, and unit are required.";
 
         return;
     }
@@ -222,18 +294,25 @@ async function saveExerciseEvent() {
     statusMessage.textContent = "Saving...";
 
     try {
-        const timestamp =
+        const createdAt =
             getCurrentLocalTimestamp();
+
+        const occurredAt =
+            selectedOccurredAt();
 
         const event = {
             id: createEventId(),
-            created_at: timestamp,
-            occurred_at: timestamp,
-            event_type: "exercise",
-            exercise_type: exerciseType,
+            created_at: createdAt,
+            occurred_at: occurredAt,
+            event_type: "event",
+
+            // Retained for compatibility with the current
+            // IndexedDB and SQLite schema.
+            exercise_type: eventName,
+
             amount,
             unit,
-            note: note || null,
+            note: details || null,
             sync_status: "pending",
         };
 
@@ -242,11 +321,17 @@ async function saveExerciseEvent() {
         statusMessage.textContent =
             "Saved on this device.";
 
-        noteInput.value = "";
+        eventNameInput.value = "";
+        detailsInput.value = "";
+
+        resetTimestampControls();
+
+        eventNameInput.focus();
 
         await loadEvents();
     } catch (error) {
         statusMessage.textContent =
+            error.message ||
             "Error saving event.";
 
         console.error(
@@ -395,7 +480,12 @@ async function initializeApplication() {
 
 saveButton.addEventListener(
     "click",
-    saveExerciseEvent
+    saveEvent
+);
+
+useCustomTimeInput.addEventListener(
+    "change",
+    toggleCustomTimeFields
 );
 
 exportButton.addEventListener(
@@ -436,6 +526,26 @@ toggleEventsButton.addEventListener(
 clearLocalEventsButton.addEventListener(
     "click",
     clearLocalEvents
+);
+
+eventNameInput.addEventListener(
+    "keydown",
+    (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            saveEvent();
+        }
+    }
+);
+
+detailsInput.addEventListener(
+    "keydown",
+    (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            saveEvent();
+        }
+    }
 );
 
 function createSyncPackageFilename() {

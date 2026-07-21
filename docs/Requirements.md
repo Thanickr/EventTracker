@@ -110,3 +110,13 @@ The system shall provide a local desktop interface that:
 - generates and automatically downloads a synchronization receipt
 - operates only on the user's local computer
 - does not require manual terminal commands during normal use
+
+## General Event Capture
+
+The system shall:
+
+- allow the user to enter a general event name
+- default the event occurrence time to the current local time
+- allow an alternate occurrence date and time at entry
+- retain the actual creation timestamp separately
+- preserve both timestamps through synchronization into SQLite

@@ -220,3 +220,25 @@ This document records important project decisions and the reasoning behind them.
 **Reason:** Terminal-based importing was the largest remaining synchronization friction point.
 
 **Date:** 2026-07-16
+
+---
+
+## Decision 0018: Generalize the Capture Interface from Exercise to Event
+
+**Decision:** The primary capture interface will use the term `Event` rather than `Exercise`.
+
+**Implementation:** The current storage field `exercise_type` is temporarily retained for compatibility, but it now functions as the event name. New generalized records use `event_type = "event"`.
+
+**Reason:** Real-world usage demonstrated that the user naturally records many kinds of events beyond exercise. Generalizing the interface aligns the software with actual use without requiring an immediate database migration.
+
+**Date:** 2026-07-19
+
+---
+
+## Decision 0019: Allow Alternate Event Times at Capture
+
+**Decision:** Events default to the current time, with an optional control for entering a different occurrence date and time.
+
+**Reason:** Real-world use showed that events are sometimes recorded after they occur. Timestamp correction improves data fidelity while keeping the normal capture path unchanged.
+
+**Date:** 2026-07-19
