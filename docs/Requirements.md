@@ -120,3 +120,14 @@ The system shall:
 - allow an alternate occurrence date and time at entry
 - retain the actual creation timestamp separately
 - preserve both timestamps through synchronization into SQLite
+
+## Local Event Correction
+
+The system shall:
+
+- allow locally stored events to be edited before synchronization
+- populate the capture form with the selected event's current values
+- preserve the event's stable ID and original creation timestamp
+- allow modification of event name, amount, unit, details, and occurrence time
+- keep edited events pending synchronization
+- allow editing to be canceled without saving changes

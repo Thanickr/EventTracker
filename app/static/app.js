@@ -76,6 +76,101 @@ const deviceStorageStatus =
         "device-storage-status"
     );
 
+const editActions =
+    document.getElementById("edit-actions");
+
+const cancelEditButton =
+    document.getElementById("cancel-edit-button");
+
+let editingEventId = null;
+let editingCreatedAt = null;
+
+function populateCustomTimestamp(timestamp) {
+    if (!timestamp) {
+        resetTimestampControls();
+        return;
+    }
+
+    useCustomTimeInput.checked = true;
+    customTimeFields.hidden = false;
+    occurredAtInput.value = timestamp.slice(0, 16);
+}
+
+
+function beginEditMode(event) {
+    editingEventId = event.id;
+    editingCreatedAt = event.created_at;
+
+    eventNameInput.value =
+        event.exercise_type || "";
+
+    amountInput.value =
+        event.amount ?? "";
+
+    unitInput.value =
+        event.unit || "";
+
+    detailsInput.value =
+        event.note || "";
+
+    populateCustomTimestamp(
+        event.occurred_at
+    );
+
+    editActions.hidden = false;
+    saveButton.textContent = "Update Event";
+
+    statusMessage.textContent =
+        "Editing local event.";
+
+    eventNameInput.focus();
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+    });
+}
+
+
+function exitEditMode() {
+    editingEventId = null;
+    editingCreatedAt = null;
+
+    editActions.hidden = true;
+    saveButton.textContent = "Save Event";
+
+    eventNameInput.value = "";
+    detailsInput.value = "";
+
+    resetTimestampControls();
+
+}
+
+
+async function editLocalEvent(eventId) {
+    try {
+        const event =
+            await getLocalEvent(eventId);
+
+        if (!event) {
+            throw new Error(
+                "This local event could not be found."
+            );
+        }
+
+        beginEditMode(event);
+    } catch (error) {
+        statusMessage.textContent =
+            error.message ||
+            "Unable to edit this event.";
+
+        console.error(
+            "Unable to load event for editing:",
+            error
+        );
+    }
+}
+
 function getCurrentLocalTimestamp() {
     const now = new Date();
     const offsetMilliseconds =
@@ -250,6 +345,27 @@ async function loadEvents() {
             }
 
             eventsList.appendChild(eventElement);
+            const actions =
+                document.createElement("div");
+
+            actions.className = "event-actions";
+
+            const editButton =
+                document.createElement("button");
+
+            editButton.type = "button";
+            editButton.className =
+                "event-edit-button";
+
+            editButton.textContent = "Edit";
+
+            editButton.addEventListener(
+                "click",
+                () => editLocalEvent(event.id)
+            );
+
+            actions.appendChild(editButton);
+            eventElement.appendChild(actions);
         });
     } catch (error) {
         localEventCount.textContent =
@@ -295,36 +411,49 @@ async function saveEvent() {
 
     try {
         const createdAt =
+            editingCreatedAt ||
             getCurrentLocalTimestamp();
 
         const occurredAt =
             selectedOccurredAt();
 
         const event = {
-            id: createEventId(),
+            id:
+                editingEventId ||
+                createEventId(),
+
             created_at: createdAt,
             occurred_at: occurredAt,
             event_type: "event",
 
-            // Retained for compatibility with the current
-            // IndexedDB and SQLite schema.
+            // Retained temporarily for schema compatibility.
             exercise_type: eventName,
 
             amount,
             unit,
             note: details || null,
+
+            // Editing a local event keeps it pending.
             sync_status: "pending",
         };
+
+        const wasEditing =
+            editingEventId !== null;
 
         await saveLocalEvent(event);
 
         statusMessage.textContent =
-            "Saved on this device.";
+            wasEditing
+                ? "Event updated on this device."
+                : "Saved on this device.";
 
-        eventNameInput.value = "";
-        detailsInput.value = "";
-
-        resetTimestampControls();
+        if (wasEditing) {
+            exitEditMode();
+        } else {
+            eventNameInput.value = "";
+            detailsInput.value = "";
+            resetTimestampControls();
+        }
 
         eventNameInput.focus();
 
@@ -545,6 +674,16 @@ detailsInput.addEventListener(
             event.preventDefault();
             saveEvent();
         }
+    }
+);
+
+cancelEditButton.addEventListener(
+    "click",
+    () => {
+        exitEditMode();
+
+        statusMessage.textContent =
+            "Edit canceled.";
     }
 );
 

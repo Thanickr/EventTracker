@@ -242,3 +242,24 @@ This document records important project decisions and the reasoning behind them.
 **Reason:** Real-world use showed that events are sometimes recorded after they occur. Timestamp correction improves data fidelity while keeping the normal capture path unchanged.
 
 **Date:** 2026-07-19
+
+---
+
+## Decision 0020: Allow Editing of Unsynchronized Local Events
+
+**Decision:** Events still stored in phone IndexedDB may be edited before synchronization.
+
+**Behavior:**
+
+- Editing reuses the primary capture form.
+- The stable event ID is preserved.
+- The original creation timestamp is preserved.
+- The occurrence timestamp and event content may be corrected.
+- The edited event remains pending synchronization.
+- Canceling an edit makes no data changes.
+
+**Boundary:** This feature corrects phone-local events before SQLite ingestion. Editing canonical SQLite records is a separate future concern.
+
+**Reason:** Small data-entry mistakes should be correctable without deleting and recreating an event or allowing incorrect information to enter the canonical database.
+
+**Date:** 2026-07-21

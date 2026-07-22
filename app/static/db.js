@@ -330,3 +330,30 @@ async function clearAllLocalEvents() {
         };
     });
 }
+
+async function getLocalEvent(eventId) {
+    const database = await openDatabase();
+
+    return new Promise((resolve, reject) => {
+        const transaction = database.transaction(
+            EVENTS_STORE,
+            "readonly"
+        );
+
+        const store = transaction.objectStore(EVENTS_STORE);
+        const request = store.get(eventId);
+
+        request.onsuccess = () => {
+            database.close();
+            resolve(request.result || null);
+        };
+
+        request.onerror = () => {
+            database.close();
+            reject(
+                request.error ||
+                new Error("Unable to read the local event.")
+            );
+        };
+    });
+}
