@@ -85,6 +85,15 @@ const cancelEditButton =
 let editingEventId = null;
 let editingCreatedAt = null;
 
+const showAllEventsButton =
+    document.getElementById(
+        "show-all-events-button"
+    );
+
+const DEFAULT_RECENT_EVENT_LIMIT = 20;
+
+let showAllRecentEvents = false;
+
 function populateCustomTimestamp(timestamp) {
     if (!timestamp) {
         resetTimestampControls();
@@ -132,7 +141,7 @@ function beginEditMode(event) {
 }
 
 
-function exitEditMode() {
+function resetEventForm() {
     editingEventId = null;
     editingCreatedAt = null;
 
@@ -140,10 +149,13 @@ function exitEditMode() {
     saveButton.textContent = "Save Event";
 
     eventNameInput.value = "";
+    amountInput.value = "1";
+    unitInput.value = "event";
     detailsInput.value = "";
 
     resetTimestampControls();
 
+    eventNameInput.focus();
 }
 
 
@@ -280,6 +292,43 @@ function toggleRecentEventsVisibility() {
     );
 
     applyRecentEventsVisibility();
+    loadEvents();
+}
+
+async function confirmAndDeleteLocalEvent(event) {
+    const eventName =
+        event.exercise_type || "this event";
+
+    const confirmed = window.confirm(
+        `Delete "${eventName}" from this device?\n\n` +
+        `This cannot be undone unless the event ` +
+        `has already been synchronized or backed up.`
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+        await deleteLocalEvent(event.id);
+
+        if (editingEventId === event.id) {
+            resetEventForm();
+        }
+
+        statusMessage.textContent =
+            "Local event deleted.";
+
+        await loadEvents();
+    } catch (error) {
+        statusMessage.textContent =
+            "Unable to delete this event.";
+
+        console.error(
+            "Local event deletion failed:",
+            error
+        );
+    }
 }
 
 async function loadEvents() {
@@ -294,6 +343,15 @@ async function loadEvents() {
                   `${eventCount === 1 ? "" : "s"} ` +
                   `stored on this device.`;
 
+        showAllEventsButton.hidden =
+            !recentEventsAreVisible() ||
+            eventCount <= DEFAULT_RECENT_EVENT_LIMIT;
+
+        showAllEventsButton.textContent =
+            showAllRecentEvents
+                ? "Show Recent"
+                : `Show All (${eventCount})`;
+
         eventsList.innerHTML = "";
 
         if (eventCount === 0) {
@@ -302,16 +360,37 @@ async function loadEvents() {
             return;
         }
 
-        events.slice(0, 20).forEach((event) => {
+        const displayedEvents =
+            showAllRecentEvents
+                ? events
+                : events.slice(
+                    0,
+                    DEFAULT_RECENT_EVENT_LIMIT
+                );
+
+        displayedEvents.forEach((event) => {
             const eventElement =
-                document.createElement("div");
+                document.createElement("article");
 
             eventElement.className = "event";
+
+            const eventContent =
+                document.createElement("button");
+
+            eventContent.type = "button";
+            eventContent.className =
+                "event-content-button";
+
+            eventContent.setAttribute(
+                "aria-label",
+                `Edit ${event.exercise_type}`
+            );
 
             const main =
                 document.createElement("div");
 
             main.className = "event-main";
+
             if (
                 event.unit === "event" &&
                 event.amount === 1
@@ -331,20 +410,24 @@ async function loadEvents() {
             meta.textContent =
                 formatEventTime(event.occurred_at);
 
-            eventElement.appendChild(main);
-            eventElement.appendChild(meta);
+            eventContent.appendChild(main);
+            eventContent.appendChild(meta);
 
             if (event.note) {
                 const note =
                     document.createElement("div");
 
-                note.className = "event-meta";
+                note.className = "event-details-preview";
                 note.textContent = event.note;
 
-                eventElement.appendChild(note);
+                eventContent.appendChild(note);
             }
 
-            eventsList.appendChild(eventElement);
+            eventContent.addEventListener(
+                "click",
+                () => editLocalEvent(event.id)
+            );
+
             const actions =
                 document.createElement("div");
 
@@ -356,7 +439,6 @@ async function loadEvents() {
             editButton.type = "button";
             editButton.className =
                 "event-edit-button";
-
             editButton.textContent = "Edit";
 
             editButton.addEventListener(
@@ -364,9 +446,29 @@ async function loadEvents() {
                 () => editLocalEvent(event.id)
             );
 
+            const deleteButton =
+                document.createElement("button");
+
+            deleteButton.type = "button";
+            deleteButton.className =
+                "event-delete-button";
+            deleteButton.textContent = "Delete";
+
+            deleteButton.addEventListener(
+                "click",
+                () =>
+                    confirmAndDeleteLocalEvent(event)
+            );
+
             actions.appendChild(editButton);
+            actions.appendChild(deleteButton);
+
+            eventElement.appendChild(eventContent);
             eventElement.appendChild(actions);
+
+            eventsList.appendChild(eventElement);
         });
+
     } catch (error) {
         localEventCount.textContent =
             "Unable to count local events.";
@@ -441,23 +543,17 @@ async function saveEvent() {
             editingEventId !== null;
 
         await saveLocalEvent(event);
+        
+        resetEventForm();
+        eventNameInput.focus();
 
         statusMessage.textContent =
             wasEditing
                 ? "Event updated on this device."
                 : "Saved on this device.";
-
-        if (wasEditing) {
-            exitEditMode();
-        } else {
-            eventNameInput.value = "";
-            detailsInput.value = "";
-            resetTimestampControls();
-        }
-
-        eventNameInput.focus();
-
+        
         await loadEvents();
+
     } catch (error) {
         statusMessage.textContent =
             error.message ||
@@ -667,24 +763,20 @@ eventNameInput.addEventListener(
     }
 );
 
-detailsInput.addEventListener(
-    "keydown",
-    (event) => {
-        if (event.key === "Enter") {
-            event.preventDefault();
-            saveEvent();
-        }
-    }
-);
 
 cancelEditButton.addEventListener(
     "click",
     () => {
-        exitEditMode();
+        resetEventForm();
 
         statusMessage.textContent =
             "Edit canceled.";
     }
+);
+
+showAllEventsButton.addEventListener(
+    "click",
+    toggleShowAllRecentEvents
 );
 
 function createSyncPackageFilename() {
@@ -937,6 +1029,63 @@ async function clearLocalEvents() {
     } finally {
         clearLocalEventsButton.disabled = false;
     }
+}
+
+async function deleteLocalEvent(eventId) {
+    if (
+        typeof eventId !== "string" ||
+        !eventId.trim()
+    ) {
+        throw new TypeError(
+            "A valid local event ID is required."
+        );
+    }
+
+    const database = await openDatabase();
+
+    return new Promise((resolve, reject) => {
+        const transaction = database.transaction(
+            EVENTS_STORE,
+            "readwrite"
+        );
+
+        const store =
+            transaction.objectStore(EVENTS_STORE);
+
+        const request = store.delete(eventId);
+
+        transaction.oncomplete = () => {
+            database.close();
+            resolve();
+        };
+
+        transaction.onerror = () => {
+            database.close();
+            reject(
+                transaction.error ||
+                new Error(
+                    "Unable to delete the local event."
+                )
+            );
+        };
+
+        transaction.onabort = () => {
+            database.close();
+            reject(
+                transaction.error ||
+                new Error(
+                    "Local event deletion was aborted."
+                )
+            );
+        };
+    });
+}
+
+function toggleShowAllRecentEvents() {
+    showAllRecentEvents =
+        !showAllRecentEvents;
+
+    loadEvents();
 }
 
 initializeApplication();

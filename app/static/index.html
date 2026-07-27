@@ -58,12 +58,11 @@
             <label for="details">
                 Details <span class="optional">(optional)</span>
             </label>
-                <input
-                id="details"
-                type="text"
-                placeholder="Optional details"
-                autocomplete="off"
-            />
+                <textarea
+                    id="details"
+                    rows="4"
+                    placeholder="Optional details"
+                ></textarea>
 
             <div class="time-section">
                 <label class="checkbox-label">
@@ -125,19 +124,30 @@
             <div class="section-heading-row">
                 <div>
                     <h2>Recent Events</h2>
+
                     <p
                         id="local-event-count"
                         class="event-count"
                     ></p>
                 </div>
 
-                <button
-                    id="toggle-events-button"
-                    class="text-button"
-                    type="button"
-                >
-                    Hide
-                </button>
+                <div class="recent-event-controls">
+                    <button
+                        id="show-all-events-button"
+                        class="text-button"
+                        type="button"
+                    >
+                        Show All
+                    </button>
+
+                    <button
+                        id="toggle-events-button"
+                        class="text-button"
+                        type="button"
+                    >
+                        Hide
+                    </button>
+                </div>
             </div>
 
             <div

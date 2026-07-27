@@ -39,12 +39,20 @@ label {
     font-weight: bold;
 }
 
-input {
+input,
+textarea {
     width: 100%;
     padding: 12px;
     font-size: 18px;
+    font-family: inherit;
+    line-height: 1.4;
     border: 1px solid #ccc;
     border-radius: 8px;
+}
+
+textarea {
+    min-height: 96px;
+    resize: vertical;
 }
 
 button {
@@ -81,9 +89,37 @@ button:active {
 }
 
 .event {
-    padding: 10px;
+    padding: 0;
+    overflow: hidden;
     border-radius: 8px;
     background: #f1f1f1;
+}
+
+.event-content-button {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 12px;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    font-size: inherit;
+    font-weight: normal;
+}
+
+.event-content-button:active {
+    background: #e4e4e4;
+}
+
+.event-details-preview {
+    margin-top: 6px;
+    color: #555;
+    font-size: 14px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 
 .event-main {
@@ -221,16 +257,34 @@ button:active {
 }
 
 .event-actions {
-    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    padding: 0 12px 12px;
 }
 
-.event-edit-button {
+.event-edit-button,
+.event-delete-button {
     width: auto;
     margin: 0;
     padding: 7px 10px;
+    font-size: 14px;
+    font-weight: normal;
+}
+
+.event-edit-button {
     background: #e8e8e8;
     color: #222;
     border: 1px solid #ccc;
-    font-size: 14px;
-    font-weight: normal;
+}
+
+.event-delete-button {
+    background: transparent;
+    color: #8f1d1d;
+    border: 1px solid #c99;
+}
+
+.recent-event-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }

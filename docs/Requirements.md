@@ -131,3 +131,16 @@ The system shall:
 - allow modification of event name, amount, unit, details, and occurrence time
 - keep edited events pending synchronization
 - allow editing to be canceled without saving changes
+
+## Capture Interface Polish
+
+The system shall:
+
+- support multiline event details
+- preserve line breaks through local storage and synchronization
+- reset the capture form to new-event mode after save, update, or cancel
+- allow unsynchronized local events to be deleted after confirmation
+- allow the full recent event card to open edit mode
+- initially display the 20 most recent local events
+- allow all local events to be shown on demand
+- allow the display to return to the 20-event recent view

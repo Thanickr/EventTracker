@@ -263,3 +263,21 @@ This document records important project decisions and the reasoning behind them.
 **Reason:** Small data-entry mistakes should be correctable without deleting and recreating an event or allowing incorrect information to enter the canonical database.
 
 **Date:** 2026-07-21
+
+---
+
+## Decision 0021: Polish Local Capture Before Adding Temporal Event Structure
+
+**Decision:** Complete several proven capture-interface improvements before implementing duration and nested-event modeling.
+
+**Changes:**
+
+- Details becomes multiline.
+- The form always resets to new-event mode.
+- Local unsynchronized events may be deleted with confirmation.
+- Event cards provide a larger editing target.
+- Recent events default to 20 with an option to show all.
+
+**Reason:** These issues emerged from sustained real-world use and can be corrected without changing synchronization or canonical storage architecture.
+
+**Date:** 2026-07-27
