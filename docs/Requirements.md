@@ -144,3 +144,15 @@ The system shall:
 - initially display the 20 most recent local events
 - allow all local events to be shown on demand
 - allow the display to return to the 20-event recent view
+
+## Simplified General Event Capture
+
+The primary capture form shall request only:
+
+- event name
+- optional multiline details
+- optional alternate occurrence time
+
+Amount and unit shall be optional storage fields rather than required capture fields.
+
+The interface shall not display full backup and restore controls during normal use.

@@ -281,3 +281,32 @@ This document records important project decisions and the reasoning behind them.
 **Reason:** These issues emerged from sustained real-world use and can be corrected without changing synchronization or canonical storage architecture.
 
 **Date:** 2026-07-27
+
+---
+
+## Decision 0022: Remove Amount and Unit from General Event Capture
+
+**Decision:** The primary phone capture form will no longer request amount or unit.
+
+**Storage behavior:**
+
+- New general events store `amount = null`.
+- New general events store `unit = null`.
+- Existing structured records retain their amount and unit.
+- The SQLite schema and synchronization importer accept both structured and narrative events.
+
+**Reason:** Real-world use showed that specialized applications already capture detailed measurements, while Event Tracker is most valuable as a low-friction narrative timeline. Structured values may be included in Details and extracted later if useful.
+
+**Date:** 2026-07-31
+
+---
+
+## Decision 0023: Remove Full Backup Controls from the Primary Interface
+
+**Decision:** Full Backup and Restore controls will be removed from the normal phone interface.
+
+**Reason:** The user synchronizes events to SQLite daily and does not use the full-backup workflow. Keeping unused controls visible adds friction and visual complexity.
+
+**Implementation:** Backup code is temporarily retained as a dormant capability and may later be exposed through an Advanced settings area.
+
+**Date:** 2026-07-31

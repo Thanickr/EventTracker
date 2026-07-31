@@ -213,8 +213,8 @@ sync_status
 | `occurred_at` | Time the event actually occurred |
 | `event_type` | Generic event category; currently `exercise` |
 | `exercise_type` | Exercise or activity description |
-| `amount` | Numeric quantity |
-| `unit` | Unit associated with the amount |
+| `amount` | Optional numeric measurement retained for structured or imported events |
+| `unit` | Optional unit associated with amount |
 | `note` | Optional descriptive text |
 | `sync_status` | Phone-side synchronization state |
 

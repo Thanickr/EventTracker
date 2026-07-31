@@ -39,22 +39,6 @@
                 autocomplete="off"
             />
 
-            <label for="amount">Amount</label>
-            <input
-                id="amount"
-                type="number"
-                step="0.01"
-                value="1"
-            />
-
-            <label for="unit">Unit</label>
-            <input
-                id="unit"
-                type="text"
-                value="event"
-                autocomplete="off"
-            />
-
             <label for="details">
                 Details <span class="optional">(optional)</span>
             </label>
@@ -188,43 +172,6 @@
 
                 <p
                     id="sync-status-message"
-                    class="status"
-                ></p>
-            </div>
-
-            <div class="backup-section">
-                <h3>Backup and Restore</h3>
-
-                <p class="section-description">
-                    Full backups contain every event currently
-                    stored on this device.
-                </p>
-
-                <button
-                    id="export-button"
-                    class="secondary-button"
-                    type="button"
-                >
-                    Export Full Backup
-                </button>
-
-                <button
-                    id="import-button"
-                    class="secondary-button"
-                    type="button"
-                >
-                    Restore Full Backup
-                </button>
-
-                <input
-                    id="import-file"
-                    type="file"
-                    accept="application/json,.json"
-                    hidden
-                />
-
-                <p
-                    id="data-status-message"
                     class="status"
                 ></p>
             </div>

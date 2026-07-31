@@ -26,11 +26,12 @@ CREATE TABLE IF NOT EXISTS events (
     -- Exercise category, such as run, walk, weights, bike, pushups.
     exercise_type TEXT NOT NULL,
 
-    -- Numeric amount, such as 1.0, 30, or 45.
-    amount REAL NOT NULL,
+    -- Optional structured measurement.
+    -- New general events may leave this null.
+    amount REAL,
 
-    -- Unit for amount, such as mile, minute, rep, or set.
-    unit TEXT NOT NULL,
+    -- Optional unit associated with amount.
+    unit TEXT,
 
     -- Optional free-text note.
     note TEXT

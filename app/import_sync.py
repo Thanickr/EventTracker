@@ -109,20 +109,27 @@ def validate_event(event: Any, index: int) -> dict[str, Any]:
         f"events[{index}].exercise_type",
     )
 
-    unit = require_nonempty_string(
-        event.get("unit"),
-        f"events[{index}].unit",
-    )
+    unit = event.get("unit")
+
+    if unit is not None:
+        unit = require_nonempty_string(
+            unit,
+            f"events[{index}].unit",
+        )
 
     amount = event.get("amount")
 
-    if (
-        isinstance(amount, bool)
-        or not isinstance(amount, (int, float))
-    ):
-        raise SyncPackageError(
-            f"Field 'events[{index}].amount' must be numeric."
-        )
+    if amount is not None:
+        if (
+            isinstance(amount, bool)
+            or not isinstance(amount, (int, float))
+        ):
+            raise SyncPackageError(
+                f"Field 'events[{index}].amount' "
+                "must be numeric or null."
+            )
+
+        amount = float(amount)
 
     note = event.get("note")
 
@@ -137,7 +144,7 @@ def validate_event(event: Any, index: int) -> dict[str, Any]:
         "occurred_at": occurred_at,
         "event_type": event_type,
         "exercise_type": exercise_type,
-        "amount": float(amount),
+        "amount": amount,
         "unit": unit,
         "note": note,
     }

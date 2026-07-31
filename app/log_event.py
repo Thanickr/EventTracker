@@ -23,9 +23,11 @@ def get_current_timestamp() -> str:
 
 def log_exercise_event(
     exercise_type: str,
-    amount: float,
-    unit: str,
+    amount: float | None = None,
+    unit: str | None = None,
     note: str | None = None,
+    source_event_id: str | None = None,
+    occurred_at: str | None = None,
 ) -> int:
     """
     Insert one exercise event into the database.
@@ -33,12 +35,14 @@ def log_exercise_event(
     Returns the ID of the newly created event.
     """
 
-    timestamp = get_current_timestamp()
+    created_at = get_current_timestamp()
+    event_occurred_at = occurred_at or created_at
 
     with sqlite3.connect(DATABASE_PATH) as connection:
         cursor = connection.execute(
             """
             INSERT INTO events (
+                source_event_id,
                 created_at,
                 occurred_at,
                 event_type,
@@ -47,11 +51,12 @@ def log_exercise_event(
                 unit,
                 note
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                timestamp,
-                timestamp,
+                source_event_id,
+                created_at,
+                event_occurred_at,
                 "exercise",
                 exercise_type,
                 amount,

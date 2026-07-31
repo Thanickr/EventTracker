@@ -13,12 +13,6 @@ const customTimeFields =
 const occurredAtInput =
     document.getElementById("occurred-at");
 
-const amountInput =
-    document.getElementById("amount");
-
-const unitInput =
-    document.getElementById("unit");
-
 const saveButton =
     document.getElementById("save-button");
 
@@ -27,18 +21,6 @@ const statusMessage =
 
 const eventsList =
     document.getElementById("events-list");
-
-const exportButton =
-    document.getElementById("export-button");
-
-const importButton =
-    document.getElementById("import-button");
-
-const importFileInput =
-    document.getElementById("import-file");
-
-const dataStatusMessage =
-    document.getElementById("data-status-message");
 
 const exportPendingButton =
     document.getElementById(
@@ -85,6 +67,9 @@ const cancelEditButton =
 let editingEventId = null;
 let editingCreatedAt = null;
 
+let editingOriginalAmount = null;
+let editingOriginalUnit = null;
+
 const showAllEventsButton =
     document.getElementById(
         "show-all-events-button"
@@ -113,11 +98,11 @@ function beginEditMode(event) {
     eventNameInput.value =
         event.exercise_type || "";
 
-    amountInput.value =
-        event.amount ?? "";
+    editingOriginalAmount =
+    event.amount ?? null;
 
-    unitInput.value =
-        event.unit || "";
+    editingOriginalUnit =
+    event.unit ?? null;
 
     detailsInput.value =
         event.note || "";
@@ -145,12 +130,13 @@ function resetEventForm() {
     editingEventId = null;
     editingCreatedAt = null;
 
+    editingOriginalAmount = null;
+    editingOriginalUnit = null;
+
     editActions.hidden = true;
     saveButton.textContent = "Save Event";
 
     eventNameInput.value = "";
-    amountInput.value = "1";
-    unitInput.value = "event";
     detailsInput.value = "";
 
     resetTimestampControls();
@@ -292,7 +278,6 @@ function toggleRecentEventsVisibility() {
     );
 
     applyRecentEventsVisibility();
-    loadEvents();
 }
 
 async function confirmAndDeleteLocalEvent(event) {
@@ -343,15 +328,6 @@ async function loadEvents() {
                   `${eventCount === 1 ? "" : "s"} ` +
                   `stored on this device.`;
 
-        showAllEventsButton.hidden =
-            !recentEventsAreVisible() ||
-            eventCount <= DEFAULT_RECENT_EVENT_LIMIT;
-
-        showAllEventsButton.textContent =
-            showAllRecentEvents
-                ? "Show Recent"
-                : `Show All (${eventCount})`;
-
         eventsList.innerHTML = "";
 
         if (eventCount === 0) {
@@ -391,16 +367,24 @@ async function loadEvents() {
 
             main.className = "event-main";
 
+            const hasStructuredAmount =
+                event.amount !== null &&
+                event.amount !== undefined;
+
+            const hasStructuredUnit =
+                typeof event.unit === "string" &&
+                event.unit.trim();
+
             if (
-                event.unit === "event" &&
-                event.amount === 1
+                hasStructuredAmount &&
+                hasStructuredUnit
             ) {
-                main.textContent =
-                    event.exercise_type;
-            } else {
                 main.textContent =
                     `${event.exercise_type} ` +
                     `${event.amount} ${event.unit}`;
+            } else {
+                main.textContent =
+                    event.exercise_type;
             }
 
             const meta =
@@ -469,6 +453,13 @@ async function loadEvents() {
             eventsList.appendChild(eventElement);
         });
 
+        showAllEventsButton.hidden =
+            eventCount <= DEFAULT_RECENT_EVENT_LIMIT;
+
+        showAllEventsButton.textContent =
+            showAllRecentEvents
+                ? "Show Recent"
+                : `Show All (${eventCount})`;
     } catch (error) {
         localEventCount.textContent =
             "Unable to count local events.";
@@ -488,22 +479,12 @@ async function saveEvent() {
     const eventName =
         eventNameInput.value.trim();
 
-    const amount =
-        Number.parseFloat(amountInput.value);
-
-    const unit =
-        unitInput.value.trim();
-
     const details =
         detailsInput.value.trim();
 
-    if (
-        !eventName ||
-        Number.isNaN(amount) ||
-        !unit
-    ) {
+    if (!eventName) {
         statusMessage.textContent =
-            "Event, amount, and unit are required.";
+            "Event is required.";
 
         return;
     }
@@ -531,8 +512,14 @@ async function saveEvent() {
             // Retained temporarily for schema compatibility.
             exercise_type: eventName,
 
-            amount,
-            unit,
+            amount:
+                editingEventId !== null
+                    ? editingOriginalAmount
+                    : null,
+            unit:
+                editingEventId !== null
+                    ? editingOriginalUnit
+                    : null,
             note: details || null,
 
             // Editing a local event keeps it pending.
@@ -577,7 +564,8 @@ function createBackupFilename() {
     return `event-tracker-backup-${date}.json`;
 }
 
-
+// Dormant full-backup utilities.
+// Retained temporarily for possible future Advanced settings.
 async function exportData() {
     exportButton.disabled = true;
     dataStatusMessage.textContent = "Preparing backup...";
@@ -643,7 +631,8 @@ function chooseImportFile() {
     importFileInput.click();
 }
 
-
+// Dormant full-backup utilities.
+// Retained temporarily for possible future Advanced settings.
 async function importData(event) {
     const selectedFile =
         event.target.files[0];
@@ -711,21 +700,6 @@ saveButton.addEventListener(
 useCustomTimeInput.addEventListener(
     "change",
     toggleCustomTimeFields
-);
-
-exportButton.addEventListener(
-    "click",
-    exportData
-);
-
-importButton.addEventListener(
-    "click",
-    chooseImportFile
-);
-
-importFileInput.addEventListener(
-    "change",
-    importData
 );
 
 exportPendingButton.addEventListener(
