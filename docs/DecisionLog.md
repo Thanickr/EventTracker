@@ -310,3 +310,30 @@ This document records important project decisions and the reasoning behind them.
 **Implementation:** Backup code is temporarily retained as a dormant capability and may later be exposed through an Advanced settings area.
 
 **Date:** 2026-07-31
+
+---
+
+## Decision 0024: Introduce a One-Day Timeline as the Primary Review Interface
+
+**Decision:** Event Tracker will add a vertical one-day timeline while retaining the existing event list as an alternate view.
+
+**Initial scope:**
+
+- one selected calendar day
+- previous-day, today, and next-day navigation
+- events positioned by occurrence time
+- tap-to-edit
+- simple vertical separation for nearby events
+- timeline/list switching
+
+**Deferred:**
+
+- draggable time cursor
+- dynamic zoom
+- event clustering
+- nested timelines
+- duration visualization
+
+**Reason:** The event data is fundamentally temporal. A timeline better represents how events relate across a day while preserving the proven list interface during evaluation.
+
+**Date:** 2026-07-31

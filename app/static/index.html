@@ -107,7 +107,7 @@
         <section class="card">
             <div class="section-heading-row">
                 <div>
-                    <h2>Recent Events</h2>
+                    <h2>Events</h2>
 
                     <p
                         id="local-event-count"
@@ -115,29 +115,118 @@
                     ></p>
                 </div>
 
-                <div class="recent-event-controls">
+                <button
+                    id="toggle-events-button"
+                    class="text-button"
+                    type="button"
+                >
+                    Hide
+                </button>
+            </div>
+
+            <div
+                id="event-view-controls"
+                class="event-view-controls"
+            >
+                <div class="view-mode-toggle">
                     <button
-                        id="show-all-events-button"
-                        class="text-button"
+                        id="timeline-view-button"
+                        class="view-mode-button active"
                         type="button"
                     >
-                        Show All
+                        Timeline
                     </button>
 
                     <button
-                        id="toggle-events-button"
-                        class="text-button"
+                        id="list-view-button"
+                        class="view-mode-button"
                         type="button"
                     >
-                        Hide
+                        List
+                    </button>
+                </div>
+
+                <div class="day-navigation">
+                    <button
+                        id="previous-day-button"
+                        class="day-navigation-button"
+                        type="button"
+                        aria-label="Previous day"
+                    >
+                        ‹
+                    </button>
+
+                    <button
+                        id="selected-day-button"
+                        class="selected-day-button"
+                        type="button"
+                    >
+                        Today
+                    </button>
+
+                    <button
+                        id="next-day-button"
+                        class="day-navigation-button"
+                        type="button"
+                        aria-label="Next day"
+                    >
+                        ›
                     </button>
                 </div>
             </div>
 
             <div
-                id="events-list"
-                class="events-list"
-            ></div>
+                id="timeline-view"
+                class="timeline-view"
+            >
+                <div
+                    id="timeline-focus-controls"
+                    class="timeline-focus-controls"
+                    hidden
+                >
+                    <button
+                        id="timeline-back-button"
+                        class="timeline-back-button"
+                        type="button"
+                    >
+                        Back to Day
+                    </button>
+
+                    <p
+                        id="timeline-focus-label"
+                        class="timeline-focus-label"
+                    ></p>
+                </div>
+
+                <div
+                    id="timeline-scroll"
+                    class="timeline-scroll"
+                >
+                    <div
+                        id="timeline"
+                        class="timeline"
+                    ></div>
+                </div>
+            </div>
+
+            <div
+                id="list-view"
+                class="list-view"
+                hidden
+            >
+                <div
+                    id="events-list"
+                    class="events-list"
+                ></div>
+
+                <button
+                    id="show-all-events-button"
+                    class="text-button show-all-button"
+                    type="button"
+                >
+                    Show All
+                </button>
+            </div>
 
             <div class="sync-section">
                 <h3>Transfer to Computer</h3>
@@ -197,7 +286,6 @@
                     class="status"
                 ></p>
             </div>
-
         </section>
     </main>
 

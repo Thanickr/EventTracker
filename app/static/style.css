@@ -288,3 +288,250 @@ button:active {
     align-items: center;
     gap: 8px;
 }
+
+.event-view-controls {
+    margin-top: 16px;
+}
+
+.view-mode-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.view-mode-button {
+    margin: 0;
+    padding: 10px;
+    background: #ececec;
+    color: #222;
+    border: 1px solid #ccc;
+    font-size: 15px;
+    font-weight: normal;
+}
+
+.view-mode-button.active {
+    background: #222;
+    color: white;
+    border-color: #222;
+}
+
+.day-navigation {
+    display: grid;
+    grid-template-columns: 48px 1fr 48px;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.day-navigation-button,
+.selected-day-button {
+    margin: 0;
+    padding: 10px;
+    background: #f4f4f4;
+    color: #222;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    font-weight: normal;
+}
+
+.day-navigation-button {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.selected-day-button {
+    font-size: 15px;
+}
+
+.timeline-view {
+    margin-top: 18px;
+}
+
+.timeline-scroll {
+    height: min(62vh, 620px);
+    min-height: 360px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    border-top: 1px solid #e2e2e2;
+    border-bottom: 1px solid #e2e2e2;
+}
+
+.timeline-focus-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.timeline-focus-controls[hidden] {
+    display: none;
+}
+
+.timeline-back-button {
+    width: auto;
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 8px 10px;
+    background: #e8e8e8;
+    color: #222;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    font-weight: normal;
+}
+
+.timeline-focus-label {
+    margin: 0;
+    color: #555;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.timeline {
+    position: relative;
+    min-height: 1776px;
+    padding-left: 72px;
+    overflow: hidden;
+}
+
+.timeline-hour {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #dedede;
+}
+
+.timeline-hour-label {
+    position: absolute;
+    left: 0;
+    width: 58px;
+    transform: translateY(-50%);
+    color: #777;
+    font-size: 12px;
+    text-align: right;
+}
+
+.timeline-hour-line {
+    position: absolute;
+    left: 68px;
+    right: 0;
+    height: 1px;
+    background: #e2e2e2;
+}
+
+.timeline-event {
+    position: absolute;
+    left: 82px;
+    right: 0;
+    width: auto;
+    min-height: 44px;
+    margin: 0;
+    padding: 9px 10px;
+    border: 1px solid #cfcfcf;
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    text-align: left;
+    color: #222;
+    cursor: pointer;
+}
+
+.timeline-event:active {
+    background: #efefef;
+}
+
+.timeline-cluster {
+    position: absolute;
+    left: 82px;
+    right: 0;
+    width: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    margin: 0;
+    padding: 7px 10px;
+    border: 1px solid #aebbd0;
+    border-radius: 10px;
+    background: #edf3fc;
+    color: #222;
+    text-align: left;
+    cursor: pointer;
+}
+
+.timeline-cluster:active {
+    background: #dfeafb;
+}
+
+.timeline-cluster-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #315f9b;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.timeline-cluster-summary {
+    display: block;
+    min-width: 0;
+}
+
+.timeline-cluster-title {
+    display: block;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.timeline-cluster-time {
+    display: block;
+    margin-top: 2px;
+    color: #526477;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.timeline-event-name {
+    font-weight: bold;
+}
+
+.timeline-event-time {
+    margin-top: 3px;
+    color: #666;
+    font-size: 12px;
+}
+
+.timeline-event-details {
+    margin-top: 6px;
+    color: #555;
+    font-size: 13px;
+    line-height: 1.35;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.timeline.timeline-focused .timeline-event-details {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.list-view {
+    margin-top: 18px;
+}
+
+.list-view[hidden],
+.timeline-view[hidden] {
+    display: none;
+}
+
+.show-all-button {
+    margin-top: 12px;
+}

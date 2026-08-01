@@ -632,3 +632,13 @@ Future analysis
 ```
 
 The capture layer should remain simple even if later analytical systems become sophisticated.
+
+## Timeline Presentation Layer
+
+The phone PWA supports two views over the same IndexedDB event collection:
+
+```text
+IndexedDB events
+    ↓ filter by selected local day
+    ├── Timeline view
+    └── List view

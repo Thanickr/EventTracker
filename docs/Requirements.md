@@ -156,3 +156,16 @@ The primary capture form shall request only:
 Amount and unit shall be optional storage fields rather than required capture fields.
 
 The interface shall not display full backup and restore controls during normal use.
+
+## Daily Timeline Review
+
+The system shall:
+
+- provide a vertical one-day event timeline
+- position events according to occurrence time
+- allow navigation to the previous day, current day, and next day
+- allow switching between timeline and list views
+- remember the selected view mode locally
+- allow timeline events to be opened for editing
+- display only events belonging to the selected local calendar day
+- retain the existing list view as a fallback

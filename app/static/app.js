@@ -79,6 +79,179 @@ const DEFAULT_RECENT_EVENT_LIMIT = 20;
 
 let showAllRecentEvents = false;
 
+const eventViewControls =
+    document.getElementById(
+        "event-view-controls"
+    );
+
+const timelineViewButton =
+    document.getElementById(
+        "timeline-view-button"
+    );
+
+const listViewButton =
+    document.getElementById(
+        "list-view-button"
+    );
+
+const timelineView =
+    document.getElementById(
+        "timeline-view"
+    );
+
+const listView =
+    document.getElementById(
+        "list-view"
+    );
+
+const timelineScroll =
+    document.getElementById(
+        "timeline-scroll"
+    );
+
+const timeline =
+    document.getElementById(
+        "timeline"
+    );
+
+const previousDayButton =
+    document.getElementById(
+        "previous-day-button"
+    );
+
+const nextDayButton =
+    document.getElementById(
+        "next-day-button"
+    );
+
+const selectedDayButton =
+    document.getElementById(
+        "selected-day-button"
+    );
+
+const timelineFocusControls =
+    document.getElementById(
+        "timeline-focus-controls"
+    );
+
+const timelineBackButton =
+    document.getElementById(
+        "timeline-back-button"
+    );
+
+const timelineFocusLabel =
+    document.getElementById(
+        "timeline-focus-label"
+    );
+
+const EVENT_VIEW_MODE_KEY =
+    "event-tracker-view-mode";
+
+const DAY_HOUR_HEIGHT_PIXELS = 72;
+const DAY_TIMELINE_TOP_PADDING_PIXELS = 24;
+const DAY_TIMELINE_BOTTOM_PADDING_PIXELS = 24;
+const DAY_EVENT_MARKER_HEIGHT_PIXELS = 52;
+const TIMELINE_HEIGHT_PIXELS =
+    DAY_TIMELINE_TOP_PADDING_PIXELS +
+    24 * DAY_HOUR_HEIGHT_PIXELS +
+    DAY_TIMELINE_BOTTOM_PADDING_PIXELS;
+const FOCUSED_TIMELINE_MINUTES = 15;
+const FOCUSED_EVENT_GAP_PIXELS = 52;
+const FOCUSED_TIMELINE_PADDING_PIXELS = 24;
+
+let selectedDay = startOfLocalDay(
+    new Date()
+);
+
+let focusedTimelineEventIds = null;
+let timelineScrollTargetDate = null;
+let shouldAutoScrollTimeline = true;
+
+function startOfLocalDay(date) {
+    const day = new Date(date);
+
+    day.setHours(0, 0, 0, 0);
+
+    return day;
+}
+
+
+function addDays(date, numberOfDays) {
+    const result = new Date(date);
+
+    result.setDate(
+        result.getDate() + numberOfDays
+    );
+
+    return startOfLocalDay(result);
+}
+
+
+function datesAreSameLocalDay(
+    firstDate,
+    secondDate
+) {
+    return (
+        firstDate.getFullYear() ===
+            secondDate.getFullYear() &&
+        firstDate.getMonth() ===
+            secondDate.getMonth() &&
+        firstDate.getDate() ===
+            secondDate.getDate()
+    );
+}
+
+
+function parseLocalTimestamp(timestamp) {
+    if (
+        typeof timestamp !== "string" ||
+        !timestamp.trim()
+    ) {
+        return null;
+    }
+
+    const parsedDate = new Date(timestamp);
+
+    if (
+        Number.isNaN(
+            parsedDate.getTime()
+        )
+    ) {
+        return null;
+    }
+
+    return parsedDate;
+}
+
+
+function formatSelectedDay(date) {
+    const today =
+        startOfLocalDay(new Date());
+
+    if (
+        datesAreSameLocalDay(
+            date,
+            today
+        )
+    ) {
+        return "Today";
+    }
+
+    return date.toLocaleDateString(
+        undefined,
+        {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+            year:
+                date.getFullYear() ===
+                today.getFullYear()
+                    ? undefined
+                    : "numeric",
+        }
+    );
+}
+
 function populateCustomTimestamp(timestamp) {
     if (!timestamp) {
         resetTimestampControls();
@@ -260,9 +433,22 @@ function recentEventsAreVisible() {
 
 
 function applyRecentEventsVisibility() {
-    const isVisible = recentEventsAreVisible();
+    const isVisible =
+        recentEventsAreVisible();
 
-    eventsList.hidden = !isVisible;
+    eventViewControls.hidden =
+        !isVisible;
+
+    timelineView.hidden =
+        !isVisible ||
+        currentEventViewMode() !==
+            "timeline";
+
+    listView.hidden =
+        !isVisible ||
+        currentEventViewMode() !==
+            "list";
+
     toggleEventsButton.textContent =
         isVisible ? "Hide" : "Show";
 }
@@ -278,6 +464,15 @@ function toggleRecentEventsVisibility() {
     );
 
     applyRecentEventsVisibility();
+
+    if (
+        newVisibility &&
+        currentEventViewMode() ===
+            "timeline"
+    ) {
+        shouldAutoScrollTimeline = true;
+        loadEvents();
+    }
 }
 
 async function confirmAndDeleteLocalEvent(event) {
@@ -316,156 +511,981 @@ async function confirmAndDeleteLocalEvent(event) {
     }
 }
 
-async function loadEvents() {
-    try {
-        const events = await getLocalEvents();
-        const eventCount = events.length;
+function currentEventViewMode() {
+    const savedMode =
+        localStorage.getItem(
+            EVENT_VIEW_MODE_KEY
+        );
 
-        localEventCount.textContent =
-            eventCount === 0
-                ? "No events stored on this device."
-                : `${eventCount} event` +
-                  `${eventCount === 1 ? "" : "s"} ` +
-                  `stored on this device.`;
+    return savedMode === "list"
+        ? "list"
+        : "timeline";
+}
 
-        eventsList.innerHTML = "";
 
-        if (eventCount === 0) {
-            eventsList.textContent =
-                "No recent events.";
+function applyEventViewMode() {
+    const viewMode =
+        currentEventViewMode();
+
+    const timelineIsActive =
+        viewMode === "timeline";
+
+    timelineView.hidden =
+        !timelineIsActive;
+
+    listView.hidden =
+        timelineIsActive;
+
+    timelineViewButton.classList.toggle(
+        "active",
+        timelineIsActive
+    );
+
+    listViewButton.classList.toggle(
+        "active",
+        !timelineIsActive
+    );
+}
+
+
+function setEventViewMode(viewMode) {
+    localStorage.setItem(
+        EVENT_VIEW_MODE_KEY,
+        viewMode
+    );
+
+    applyEventViewMode();
+}
+
+
+function selectTimelineView() {
+    shouldAutoScrollTimeline = true;
+    setEventViewMode("timeline");
+    loadEvents();
+}
+
+
+function selectListView() {
+    setEventViewMode("list");
+}
+
+async function changeSelectedDay(
+    numberOfDays
+) {
+    focusedTimelineEventIds = null;
+    timelineScrollTargetDate = null;
+    shouldAutoScrollTimeline = true;
+
+    selectedDay = addDays(
+        selectedDay,
+        numberOfDays
+    );
+
+    await loadEvents();
+}
+
+
+async function returnToToday() {
+    focusedTimelineEventIds = null;
+    timelineScrollTargetDate = null;
+    shouldAutoScrollTimeline = true;
+
+    selectedDay =
+        startOfLocalDay(new Date());
+
+    await loadEvents();
+}
+
+
+function updateSelectedDayLabel() {
+    selectedDayButton.textContent =
+        formatSelectedDay(
+            selectedDay
+        );
+}
+
+function eventsForSelectedDay(events) {
+    return events.filter((event) => {
+        const occurredAt =
+            parseLocalTimestamp(
+                event.occurred_at
+            );
+
+        if (!occurredAt) {
+            return false;
+        }
+
+        return datesAreSameLocalDay(
+            occurredAt,
+            selectedDay
+        );
+    });
+}
+
+function minutesSinceStartOfDay(date) {
+    return (
+        date.getHours() * 60 +
+        date.getMinutes() +
+        date.getSeconds() / 60
+    );
+}
+
+
+function timelinePositionPixels(date) {
+    const minutes =
+        minutesSinceStartOfDay(date);
+
+    return (
+        DAY_TIMELINE_TOP_PADDING_PIXELS +
+        (
+            minutes / 60
+        ) * DAY_HOUR_HEIGHT_PIXELS
+    );
+}
+
+
+function formatTimelineTime(date) {
+    return date.toLocaleTimeString(
+        undefined,
+        {
+            hour: "numeric",
+            minute: "2-digit",
+        }
+    );
+}
+
+function renderTimelineGrid() {
+    timeline.innerHTML = "";
+    timeline.classList.remove(
+        "timeline-focused"
+    );
+    timeline.style.height =
+        `${TIMELINE_HEIGHT_PIXELS}px`;
+    timeline.style.minHeight =
+        `${TIMELINE_HEIGHT_PIXELS}px`;
+
+    for (
+        let hour = 0;
+        hour <= 24;
+        hour += 1
+    ) {
+        const top =
+            DAY_TIMELINE_TOP_PADDING_PIXELS +
+            hour * DAY_HOUR_HEIGHT_PIXELS;
+
+        const label =
+            document.createElement("div");
+
+        label.className =
+            "timeline-hour-label";
+
+        label.style.top =
+            `${top}px`;
+
+        if (hour < 24) {
+            const labelDate =
+                new Date(selectedDay);
+
+            labelDate.setHours(
+                hour,
+                0,
+                0,
+                0
+            );
+
+            label.textContent =
+                labelDate.toLocaleTimeString(
+                    undefined,
+                    {
+                        hour: "numeric",
+                    }
+                );
+        }
+
+        const line =
+            document.createElement("div");
+
+        line.className =
+            "timeline-hour-line";
+
+        line.style.top =
+            `${top}px`;
+
+        timeline.appendChild(label);
+        timeline.appendChild(line);
+    }
+}
+
+function timelineEntries(events) {
+    return events
+        .map((event) => ({
+            event,
+            occurredAt:
+                parseLocalTimestamp(
+                    event.occurred_at
+                ),
+        }))
+        .filter(
+            (entry) => entry.occurredAt
+        )
+        .sort(
+            (first, second) =>
+                first.occurredAt -
+                second.occurredAt
+        );
+}
+
+
+function groupDayTimelineEntries(entries) {
+    const groups = [];
+
+    let currentGroup = [];
+    let groupStartPosition = null;
+
+    for (const entry of entries) {
+        const entryPosition =
+            timelinePositionPixels(
+                entry.occurredAt
+            );
+
+        if (
+            currentGroup.length === 0 ||
+            entryPosition -
+                groupStartPosition <
+                DAY_EVENT_MARKER_HEIGHT_PIXELS
+        ) {
+            currentGroup.push(entry);
+
+            if (groupStartPosition === null) {
+                groupStartPosition =
+                    entryPosition;
+            }
+
+            continue;
+        }
+
+        groups.push(currentGroup);
+        currentGroup = [entry];
+        groupStartPosition = entryPosition;
+    }
+
+    if (currentGroup.length > 0) {
+        groups.push(currentGroup);
+    }
+
+    return groups;
+}
+
+
+function formatTimelineRange(entries) {
+    const firstTime =
+        formatTimelineTime(
+            entries[0].occurredAt
+        );
+
+    const lastTime =
+        formatTimelineTime(
+            entries[
+                entries.length - 1
+            ].occurredAt
+        );
+
+    return firstTime === lastTime
+        ? firstTime
+        : `${firstTime}–${lastTime}`;
+}
+
+
+function createTimelineEventButton(
+    event,
+    occurredAt
+) {
+    const eventButton =
+        document.createElement("button");
+
+    eventButton.type = "button";
+    eventButton.className =
+        "timeline-event";
+
+    const name =
+        document.createElement("div");
+
+    name.className =
+        "timeline-event-name";
+
+    name.textContent =
+        event.exercise_type;
+
+    const time =
+        document.createElement("div");
+
+    time.className =
+        "timeline-event-time";
+
+    time.textContent =
+        formatTimelineTime(occurredAt);
+
+    eventButton.appendChild(name);
+    eventButton.appendChild(time);
+
+    if (event.note) {
+        const details =
+            document.createElement("div");
+
+        details.className =
+            "timeline-event-details";
+
+        details.textContent =
+            event.note;
+
+        eventButton.appendChild(details);
+    }
+
+    eventButton.addEventListener(
+        "click",
+        () => editLocalEvent(event.id)
+    );
+
+    return eventButton;
+}
+
+
+function focusTimelineCluster(entries) {
+    focusedTimelineEventIds =
+        entries.map(
+            (entry) => entry.event.id
+        );
+
+    timelineScrollTargetDate =
+        new Date(entries[0].occurredAt);
+
+    loadEvents();
+}
+
+
+function returnToDayTimeline() {
+    focusedTimelineEventIds = null;
+    shouldAutoScrollTimeline = true;
+    loadEvents();
+}
+
+
+function createTimelineClusterButton(entries) {
+    const clusterButton =
+        document.createElement("button");
+
+    clusterButton.type = "button";
+    clusterButton.className =
+        "timeline-cluster";
+
+    const count =
+        document.createElement("span");
+
+    count.className =
+        "timeline-cluster-count";
+    count.textContent =
+        String(entries.length);
+
+    const summary =
+        document.createElement("span");
+
+    summary.className =
+        "timeline-cluster-summary";
+
+    const title =
+        document.createElement("span");
+
+    title.className =
+        "timeline-cluster-title";
+    title.textContent =
+        `${entries.length} nearby events`;
+
+    const time =
+        document.createElement("span");
+
+    time.className =
+        "timeline-cluster-time";
+    time.textContent =
+        formatTimelineRange(entries);
+
+    summary.appendChild(title);
+    summary.appendChild(time);
+
+    clusterButton.appendChild(count);
+    clusterButton.appendChild(summary);
+
+    clusterButton.setAttribute(
+        "aria-label",
+        `Open ${entries.length} events from ` +
+            formatTimelineRange(entries)
+    );
+
+    clusterButton.addEventListener(
+        "click",
+        () => focusTimelineCluster(entries)
+    );
+
+    return clusterButton;
+}
+
+
+function renderDayTimeline(entries) {
+    timelineFocusControls.hidden = true;
+    renderTimelineGrid();
+
+    if (entries.length === 0) {
+        autoScrollDayTimeline(entries);
+        return;
+    }
+
+    const groups =
+        groupDayTimelineEntries(entries);
+
+    for (const group of groups) {
+        const top = Math.max(
+            DAY_TIMELINE_TOP_PADDING_PIXELS,
+            Math.min(
+                timelinePositionPixels(
+                    group[0].occurredAt
+                ),
+                TIMELINE_HEIGHT_PIXELS -
+                    DAY_TIMELINE_BOTTOM_PADDING_PIXELS -
+                    DAY_EVENT_MARKER_HEIGHT_PIXELS
+            )
+        );
+
+        const marker =
+            group.length === 1
+                ? createTimelineEventButton(
+                      group[0].event,
+                      group[0].occurredAt
+                  )
+                : createTimelineClusterButton(
+                      group
+                  );
+
+        marker.style.top = `${top}px`;
+        timeline.appendChild(marker);
+    }
+
+    autoScrollDayTimeline(entries);
+}
+
+
+function preferredDayScrollDate(entries) {
+    if (timelineScrollTargetDate) {
+        return timelineScrollTargetDate;
+    }
+
+    const today =
+        startOfLocalDay(new Date());
+
+    if (
+        datesAreSameLocalDay(
+            selectedDay,
+            today
+        )
+    ) {
+        return new Date();
+    }
+
+    if (entries.length > 0) {
+        return entries[0].occurredAt;
+    }
+
+    return selectedDay;
+}
+
+
+function autoScrollDayTimeline(entries) {
+    if (
+        !shouldAutoScrollTimeline ||
+        currentEventViewMode() !==
+            "timeline" ||
+        !recentEventsAreVisible()
+    ) {
+        return;
+    }
+
+    const targetDate =
+        preferredDayScrollDate(entries);
+
+    shouldAutoScrollTimeline = false;
+    timelineScrollTargetDate = null;
+
+    requestAnimationFrame(() => {
+        const targetPosition =
+            timelinePositionPixels(
+                targetDate
+            );
+
+        timelineScroll.scrollTop =
+            Math.max(
+                0,
+                targetPosition -
+                    DAY_HOUR_HEIGHT_PIXELS
+            );
+    });
+}
+
+
+function focusedTimelineRange(entries) {
+    const firstTime =
+        entries[0].occurredAt.getTime();
+
+    const lastTime =
+        entries[
+            entries.length - 1
+        ].occurredAt.getTime();
+
+    const minimumSpan =
+        FOCUSED_TIMELINE_MINUTES *
+        60 *
+        1000;
+
+    const eventSpan =
+        lastTime - firstTime;
+
+    const desiredSpan = Math.max(
+        minimumSpan,
+        eventSpan + 10 * 60 * 1000
+    );
+
+    const center =
+        (firstTime + lastTime) / 2;
+
+    const dayStart =
+        selectedDay.getTime();
+
+    const dayEnd =
+        addDays(selectedDay, 1).getTime();
+
+    let start = Math.max(
+        dayStart,
+        center - desiredSpan / 2
+    );
+
+    let end = Math.min(
+        dayEnd,
+        start + desiredSpan
+    );
+
+    start = Math.max(
+        dayStart,
+        end - desiredSpan
+    );
+
+    return {
+        start,
+        end,
+    };
+}
+
+
+function focusedGridIntervalMinutes(
+    rangeMinutes
+) {
+    if (rangeMinutes <= 20) {
+        return 2;
+    }
+
+    if (rangeMinutes <= 45) {
+        return 5;
+    }
+
+    if (rangeMinutes <= 120) {
+        return 15;
+    }
+
+    return 30;
+}
+
+
+function renderFocusedTimelineGrid(
+    range,
+    height
+) {
+    timeline.innerHTML = "";
+    timeline.classList.add(
+        "timeline-focused"
+    );
+    timeline.style.height = `${height}px`;
+    timeline.style.minHeight = `${height}px`;
+
+    const rangeMilliseconds =
+        range.end - range.start;
+
+    const rangeMinutes =
+        rangeMilliseconds / (60 * 1000);
+
+    const contentHeight =
+        height -
+        2 * FOCUSED_TIMELINE_PADDING_PIXELS;
+
+    const intervalMilliseconds =
+        focusedGridIntervalMinutes(
+            rangeMinutes
+        ) *
+        60 *
+        1000;
+
+    let labelTime =
+        Math.ceil(
+            range.start /
+                intervalMilliseconds
+        ) * intervalMilliseconds;
+
+    while (labelTime <= range.end) {
+        const top =
+            FOCUSED_TIMELINE_PADDING_PIXELS +
+            (
+                (labelTime - range.start) /
+                rangeMilliseconds
+            ) * contentHeight;
+
+        const label =
+            document.createElement("div");
+
+        label.className =
+            "timeline-hour-label";
+        label.style.top = `${top}px`;
+        label.textContent =
+            formatTimelineTime(
+                new Date(labelTime)
+            );
+
+        const line =
+            document.createElement("div");
+
+        line.className =
+            "timeline-hour-line";
+        line.style.top = `${top}px`;
+
+        timeline.appendChild(label);
+        timeline.appendChild(line);
+
+        labelTime += intervalMilliseconds;
+    }
+}
+
+
+function focusedTimelineTopPositions(
+    entries,
+    range,
+    height
+) {
+    const maximumTop =
+        height -
+        FOCUSED_TIMELINE_PADDING_PIXELS -
+        FOCUSED_EVENT_GAP_PIXELS;
+
+    const contentHeight =
+        height -
+        2 * FOCUSED_TIMELINE_PADDING_PIXELS;
+
+    const positions = [];
+
+    for (const entry of entries) {
+        const naturalTop =
+            FOCUSED_TIMELINE_PADDING_PIXELS +
+            (
+                (
+                    entry.occurredAt.getTime() -
+                    range.start
+                ) /
+                (range.end - range.start)
+            ) * contentHeight;
+
+        const previousTop =
+            positions.length > 0
+                ? positions[
+                      positions.length - 1
+                  ]
+                : null;
+
+        positions.push(
+            previousTop === null
+                ? naturalTop
+                : Math.max(
+                      naturalTop,
+                      previousTop +
+                          FOCUSED_EVENT_GAP_PIXELS
+                  )
+        );
+    }
+
+    const overflow = Math.max(
+        0,
+        positions[positions.length - 1] -
+            maximumTop
+    );
+
+    return positions.map(
+        (position) =>
+            Math.max(
+                FOCUSED_TIMELINE_PADDING_PIXELS,
+                position - overflow
+            )
+    );
+}
+
+
+function renderFocusedTimeline(entries) {
+    const range =
+        focusedTimelineRange(entries);
+
+    const height = Math.max(
+        600,
+        entries.length *
+            FOCUSED_EVENT_GAP_PIXELS +
+            120
+    );
+
+    timelineFocusControls.hidden = false;
+    timelineFocusLabel.textContent =
+        `${entries.length} events · ` +
+        formatTimelineRange(entries);
+
+    renderFocusedTimelineGrid(
+        range,
+        height
+    );
+
+    const positions =
+        focusedTimelineTopPositions(
+            entries,
+            range,
+            height
+        );
+
+    entries.forEach((entry, index) => {
+        const eventButton =
+            createTimelineEventButton(
+                entry.event,
+                entry.occurredAt
+            );
+
+        eventButton.style.top =
+            `${positions[index]}px`;
+
+        timeline.appendChild(eventButton);
+    });
+
+    requestAnimationFrame(() => {
+        timelineScroll.scrollTop = 0;
+    });
+}
+
+
+function renderTimelineEvents(events) {
+    const entries =
+        timelineEntries(events);
+
+    if (focusedTimelineEventIds) {
+        const focusedIds =
+            new Set(
+                focusedTimelineEventIds
+            );
+
+        const focusedEntries =
+            entries.filter(
+                (entry) =>
+                    focusedIds.has(
+                        entry.event.id
+                    )
+            );
+
+        if (focusedEntries.length > 0) {
+            renderFocusedTimeline(
+                focusedEntries
+            );
             return;
         }
 
-        const displayedEvents =
-            showAllRecentEvents
-                ? events
-                : events.slice(
-                    0,
-                    DEFAULT_RECENT_EVENT_LIMIT
-                );
+        focusedTimelineEventIds = null;
+    }
 
-        displayedEvents.forEach((event) => {
-            const eventElement =
-                document.createElement("article");
+    renderDayTimeline(entries);
+}
 
-            eventElement.className = "event";
+function renderListEvents(events) {
+    eventsList.innerHTML = "";
 
-            const eventContent =
-                document.createElement("button");
-
-            eventContent.type = "button";
-            eventContent.className =
-                "event-content-button";
-
-            eventContent.setAttribute(
-                "aria-label",
-                `Edit ${event.exercise_type}`
-            );
-
-            const main =
-                document.createElement("div");
-
-            main.className = "event-main";
-
-            const hasStructuredAmount =
-                event.amount !== null &&
-                event.amount !== undefined;
-
-            const hasStructuredUnit =
-                typeof event.unit === "string" &&
-                event.unit.trim();
-
-            if (
-                hasStructuredAmount &&
-                hasStructuredUnit
-            ) {
-                main.textContent =
-                    `${event.exercise_type} ` +
-                    `${event.amount} ${event.unit}`;
-            } else {
-                main.textContent =
-                    event.exercise_type;
-            }
-
-            const meta =
-                document.createElement("div");
-
-            meta.className = "event-meta";
-            meta.textContent =
-                formatEventTime(event.occurred_at);
-
-            eventContent.appendChild(main);
-            eventContent.appendChild(meta);
-
-            if (event.note) {
-                const note =
-                    document.createElement("div");
-
-                note.className = "event-details-preview";
-                note.textContent = event.note;
-
-                eventContent.appendChild(note);
-            }
-
-            eventContent.addEventListener(
-                "click",
-                () => editLocalEvent(event.id)
-            );
-
-            const actions =
-                document.createElement("div");
-
-            actions.className = "event-actions";
-
-            const editButton =
-                document.createElement("button");
-
-            editButton.type = "button";
-            editButton.className =
-                "event-edit-button";
-            editButton.textContent = "Edit";
-
-            editButton.addEventListener(
-                "click",
-                () => editLocalEvent(event.id)
-            );
-
-            const deleteButton =
-                document.createElement("button");
-
-            deleteButton.type = "button";
-            deleteButton.className =
-                "event-delete-button";
-            deleteButton.textContent = "Delete";
-
-            deleteButton.addEventListener(
-                "click",
-                () =>
-                    confirmAndDeleteLocalEvent(event)
-            );
-
-            actions.appendChild(editButton);
-            actions.appendChild(deleteButton);
-
-            eventElement.appendChild(eventContent);
-            eventElement.appendChild(actions);
-
-            eventsList.appendChild(eventElement);
-        });
+    if (events.length === 0) {
+        eventsList.textContent =
+            "No events recorded for this day.";
 
         showAllEventsButton.hidden =
-            eventCount <= DEFAULT_RECENT_EVENT_LIMIT;
+            true;
 
-        showAllEventsButton.textContent =
-            showAllRecentEvents
-                ? "Show Recent"
-                : `Show All (${eventCount})`;
+        return;
+    }
+
+    const displayedEvents =
+        showAllRecentEvents
+            ? events
+            : events.slice(
+                  0,
+                  DEFAULT_RECENT_EVENT_LIMIT
+              );
+
+    displayedEvents.forEach((event) => {
+        const eventElement =
+        document.createElement("article");
+
+        eventElement.className = "event";
+
+        const eventContent =
+            document.createElement("button");
+
+        eventContent.type = "button";
+        eventContent.className =
+            "event-content-button";
+
+        eventContent.setAttribute(
+            "aria-label",
+            `Edit ${event.exercise_type}`
+        );
+
+        const main =
+            document.createElement("div");
+
+        main.className = "event-main";
+
+        const hasStructuredAmount =
+            event.amount !== null &&
+            event.amount !== undefined;
+
+        const hasStructuredUnit =
+            typeof event.unit === "string" &&
+            event.unit.trim();
+
+        if (
+            hasStructuredAmount &&
+            hasStructuredUnit
+        ) {
+            main.textContent =
+                `${event.exercise_type} ` +
+                `${event.amount} ${event.unit}`;
+        } else {
+            main.textContent =
+                event.exercise_type;
+        }
+
+        const meta =
+            document.createElement("div");
+
+        meta.className = "event-meta";
+        meta.textContent =
+            formatEventTime(event.occurred_at);
+
+        eventContent.appendChild(main);
+        eventContent.appendChild(meta);
+
+        if (event.note) {
+            const note =
+                document.createElement("div");
+
+            note.className = "event-details-preview";
+            note.textContent = event.note;
+
+            eventContent.appendChild(note);
+        }
+
+        eventContent.addEventListener(
+            "click",
+            () => editLocalEvent(event.id)
+        );
+
+        const actions =
+            document.createElement("div");
+
+        actions.className = "event-actions";
+
+        const editButton =
+            document.createElement("button");
+
+        editButton.type = "button";
+        editButton.className =
+            "event-edit-button";
+        editButton.textContent = "Edit";
+
+        editButton.addEventListener(
+            "click",
+            () => editLocalEvent(event.id)
+        );
+
+        const deleteButton =
+            document.createElement("button");
+
+        deleteButton.type = "button";
+        deleteButton.className =
+            "event-delete-button";
+        deleteButton.textContent = "Delete";
+
+        deleteButton.addEventListener(
+            "click",
+            () =>
+                confirmAndDeleteLocalEvent(event)
+        );
+
+        actions.appendChild(editButton);
+        actions.appendChild(deleteButton);
+
+        eventElement.appendChild(eventContent);
+        eventElement.appendChild(actions);
+
+        eventsList.appendChild(eventElement);
+    });
+
+    showAllEventsButton.hidden =
+        events.length <=
+        DEFAULT_RECENT_EVENT_LIMIT;
+
+    showAllEventsButton.textContent =
+        showAllRecentEvents
+            ? "Show Recent"
+            : `Show All (${events.length})`;
+}
+
+async function loadEvents() {
+    try {
+        const allEvents =
+            await getLocalEvents();
+
+        const dayEvents =
+            eventsForSelectedDay(
+                allEvents
+            );
+
+        localEventCount.textContent =
+            dayEvents.length === 0
+                ? "No events for this day."
+                : `${dayEvents.length} event` +
+                  `${dayEvents.length === 1 ? "" : "s"} ` +
+                  `for this day.`;
+
+        updateSelectedDayLabel();
+
+        renderTimelineEvents(
+            dayEvents
+        );
+
+        renderListEvents(
+            dayEvents
+        );
+
+        applyEventViewMode();
+        applyRecentEventsVisibility();
     } catch (error) {
         localEventCount.textContent =
-            "Unable to count local events.";
+            "Unable to load events.";
+
+        timeline.innerHTML =
+            "Unable to load the timeline.";
 
         eventsList.textContent =
-            "Unable to load local events.";
+            "Unable to load events.";
 
         console.error(
             "Unable to load events:",
@@ -752,6 +1772,37 @@ showAllEventsButton.addEventListener(
     "click",
     toggleShowAllRecentEvents
 );
+
+timelineViewButton.addEventListener(
+    "click",
+    selectTimelineView
+);
+
+listViewButton.addEventListener(
+    "click",
+    selectListView
+);
+
+previousDayButton.addEventListener(
+    "click",
+    () => changeSelectedDay(-1)
+);
+
+nextDayButton.addEventListener(
+    "click",
+    () => changeSelectedDay(1)
+);
+
+selectedDayButton.addEventListener(
+    "click",
+    returnToToday
+);
+
+timelineBackButton.addEventListener(
+    "click",
+    returnToDayTimeline
+);
+
 
 function createSyncPackageFilename() {
     const timestamp = new Date()
