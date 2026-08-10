@@ -10,9 +10,20 @@ __pycache__/
 *.db
 *.sqlite
 *.sqlite3
+*.db-wal
+*.db-shm
+*.db-journal
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite-journal
+*.sqlite3-wal
+*.sqlite3-shm
+*.sqlite3-journal
 
 # Environment variables / secrets
 .env
+.env.*
+!.env.example
 
 # VS Code workspace settings
 .vscode/
@@ -31,7 +42,13 @@ database/sync_receipts/
 
 # Local synchronization and backup files
 *-sync-package.json
+*-sync-package-*.json
 event-tracker-backup-*.json
+
+# Local archives and ZIP integration workspaces
+*.zip
+EventTracker-zip-preflight-*/
+EventTracker-zip-integration-*/
 
 # Temporary desktop sync uploads
 *.tmp
