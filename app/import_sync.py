@@ -112,10 +112,13 @@ def validate_event(event: Any, index: int) -> dict[str, Any]:
     unit = event.get("unit")
 
     if unit is not None:
-        unit = require_nonempty_string(
-            unit,
-            f"events[{index}].unit",
-        )
+        if not isinstance(unit, str):
+            raise SyncPackageError(
+                f"Field 'events[{index}].unit' "
+                "must be text or null."
+            )
+
+        unit = unit.strip() or None
 
     amount = event.get("amount")
 
@@ -317,7 +320,10 @@ def write_receipt(
 
     receipt_path = (
         RECEIPTS_DIRECTORY
-        / f"event-tracker-receipt-{timestamp}.json"
+        / (
+            f"event-tracker-receipt-{timestamp}-"
+            f"{receipt['receipt_id']}.json"
+        )
     )
 
     receipt_path.write_text(
@@ -356,14 +362,13 @@ def import_sync_package(
 
     receipt_path = write_receipt(receipt)
 
-    print(f"Package ID: {package_id}")
     print(f"Events in package: {len(events)}")
     print(f"New events imported: {len(accepted)}")
     print(
         "Events already present: "
         f"{len(already_present)}"
     )
-    print(f"Receipt created: {receipt_path}")
+    print("Receipt created in database/sync_receipts.")
 
     return receipt_path
 
