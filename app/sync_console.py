@@ -255,8 +255,24 @@ def read_sync_console() -> str:
                     }
                 );
 
-                const result =
-                    await response.json();
+                const responseText =
+                    await response.text();
+
+                let result;
+
+                try {
+                    result = JSON.parse(
+                        responseText
+                    );
+                } catch (parseError) {
+                    throw new Error(
+                        response.ok
+                            ? "The sync server returned an invalid response."
+                            : `The sync server failed ` +
+                              `(${response.status}). ` +
+                              `Check the server terminal for details.`
+                    );
+                }
 
                 if (!response.ok) {
                     throw new Error(
