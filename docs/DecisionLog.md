@@ -360,3 +360,52 @@ and the existing event corpus is sufficiently dense to support descriptive
 analysis. Isolating analysis protects the low-friction capture path.
 
 **Date:** 2026-08-10
+
+---
+
+## Decision 0026: Specify a Local Aggregate Daily Context Explorer
+
+**Decision:** Daily Context Explorer v0.1 will be local-only, read-only,
+aggregate-first, and event-name aware. It may show aggregate event-name counts
+for a requested window and selected calendar day, but it will not expose raw
+event records.
+
+The interface will support 7-, 30-, and 90-day inclusive display windows, with
+30 days as the UI default and 90 days as the maximum. The explorer will use a
+dedicated aggregate endpoint rather than reusing the raw `/events` response.
+
+**Interpretation boundary:** Stored events are observations. Counts, date
+buckets, logging coverage, and logged-event distributions are reproducible
+derived measures. AURA states, psychological meaning, behavioral judgments,
+clinical conclusions, and causal context are unimplemented inferred
+constructs. Event volume, missing logs, event-name mix, and display-window
+length must not be presented as proxies for those constructs.
+
+**Privacy consequences:** Aggregate event names remain sensitive user content.
+The surface stays within the local loopback boundary, uses no-store responses,
+and excludes details, identifiers, individual timestamps, raw rows, database
+paths, receipt information, and synchronization status. The existing name-free
+baseline audit remains unchanged.
+
+**Rejected alternatives:**
+
+- raw-record drilldown, because it is unnecessary for the aggregate questions
+  and would widen exposure of sensitive content
+- name-free counts only, because aggregate event-name mix is an accepted local
+  explorer requirement
+- AURA scoring in v0.1, because the stored record does not support those
+  inferences
+- unbounded date ranges, because v0.1 needs predictable validation, response
+  size, and presentation behavior
+- reuse of the raw `/events` response, because aggregation and privacy
+  enforcement belong in a dedicated server-side analysis path
+
+**Reason:** A narrow deterministic contract lets later analysis, API, and UI
+work proceed without inventing product decisions or weakening the established
+privacy and observation-versus-inference boundaries.
+
+**Revisit when:** A later approved requirement adds raw-record review,
+period-to-period comparison, long-term trends, validated timezone history, or
+an inferred model with its own evidence, privacy, and validation design.
+
+**Date:** 2026-08-10

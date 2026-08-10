@@ -182,3 +182,37 @@ The analysis layer shall:
 - keep reproducible derived measures separate from inferred AURA variables
 - preserve local calendar-day semantics until an explicit time-zone policy is
   adopted for cross-source alignment
+
+## Planned Daily Context Explorer v0.1
+
+The planned Daily Context Explorer shall conform to the authoritative
+[Daily Context Explorer v0.1 specification](DailyContextExplorer.md).
+
+The future explorer shall:
+
+- operate locally through a loopback-only, read-only aggregate endpoint
+- keep the existing name-free baseline audit contract unchanged
+- offer 7-, 30-, and 90-day inclusive display windows
+- default the UI to 30 days ending on the user's current local date
+- require strict inclusive dates, reject reversed ranges, and reject windows
+  longer than 90 calendar days
+- return one ascending, zero-filled bucket for every requested calendar date
+- provide only aggregate counts and event-name labels for a selected day
+- exclude raw records, individual timestamps, notes, and identifiers
+- retain exact stored wording for nonblank event names and map null, empty, or
+  whitespace-only names to `(blank)`
+- order event-name aggregates by count descending and then by label ascending
+  using the specified case-sensitive Unicode code-point order
+- round coverage to four decimal places and average events per logged day to
+  two decimal places using decimal half-up rounding
+- return a null average when no requested day contains a valid event
+- report invalid occurrence timestamps as a corpus-scoped quality count
+- report blank event names as a window-scoped quality count
+- exclude invalid occurrence timestamps from all date-based measures
+- use `Cache-Control: no-store` for successful and error responses
+- describe observations and reproducible derived measures without AURA or
+  other psychological, behavioral, clinical, or wellness inference
+- use synthetic temporary data only in automated explorer tests
+
+The endpoint and dashboard remain planned and are not implemented by this
+documentation change.
