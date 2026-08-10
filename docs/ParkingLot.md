@@ -17,6 +17,7 @@ Parking Lot items should not be implemented until real usage demonstrates a need
 
 ## Future Features
 
+- Charts
 - Search
 - Editing events
 - Deleting events
@@ -28,6 +29,8 @@ Parking Lot items should not be implemented until real usage demonstrates a need
 - Voice logging
 - Photo attachments
 - AI summaries
+- Dashboard
+- Long-term trend analysis
 
 ## Guiding Rule
 

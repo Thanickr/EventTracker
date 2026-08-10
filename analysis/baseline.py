@@ -70,7 +70,8 @@ def _rounded(value: float | None) -> float | None:
 def build_baseline_report(database_path: Path) -> dict[str, Any]:
     """Return aggregate facts without exposing event content."""
 
-    connection = open_readonly_database(database_path)
+    resolved_database_path = database_path.expanduser().resolve()
+    connection = open_readonly_database(resolved_database_path)
 
     try:
         integrity_rows = connection.execute("PRAGMA integrity_check").fetchall()
@@ -114,6 +115,7 @@ def build_baseline_report(database_path: Path) -> dict[str, Any]:
                 SELECT date(occurred_at) AS event_day,
                        COUNT(*) AS events_per_day
                 FROM events
+                WHERE date(occurred_at) IS NOT NULL
                 GROUP BY date(occurred_at)
             )
             """,
@@ -140,6 +142,7 @@ def build_baseline_report(database_path: Path) -> dict[str, Any]:
                 """
                 SELECT COUNT(*)
                 FROM events
+                WHERE date(occurred_at) IS NOT NULL
                 GROUP BY date(occurred_at)
                 """
             )
@@ -158,16 +161,37 @@ def build_baseline_report(database_path: Path) -> dict[str, Any]:
             connection,
             """
             SELECT
-                SUM(CASE WHEN trim(exercise_type) = '' THEN 1 ELSE 0 END)
+                COALESCE(
+                    SUM(CASE WHEN trim(exercise_type) = '' THEN 1 ELSE 0 END),
+                    0
+                )
                     AS blank_event_names,
-                SUM(CASE WHEN amount IS NULL THEN 1 ELSE 0 END)
+                COALESCE(
+                    SUM(CASE WHEN amount IS NULL THEN 1 ELSE 0 END),
+                    0
+                )
                     AS amount_null,
-                SUM(CASE WHEN unit IS NULL OR trim(unit) = '' THEN 1 ELSE 0 END)
+                COALESCE(
+                    SUM(
+                        CASE WHEN unit IS NULL OR trim(unit) = ''
+                            THEN 1 ELSE 0 END
+                    ),
+                    0
+                )
                     AS unit_blank_or_null,
-                SUM(CASE WHEN note IS NULL OR trim(note) = '' THEN 1 ELSE 0 END)
+                COALESCE(
+                    SUM(
+                        CASE WHEN note IS NULL OR trim(note) = ''
+                            THEN 1 ELSE 0 END
+                    ),
+                    0
+                )
                     AS details_blank_or_null,
-                SUM(CASE WHEN (amount IS NULL) !=
-                    (unit IS NULL OR trim(unit) = '') THEN 1 ELSE 0 END)
+                COALESCE(
+                    SUM(CASE WHEN (amount IS NULL) !=
+                        (unit IS NULL OR trim(unit) = '') THEN 1 ELSE 0 END),
+                    0
+                )
                     AS amount_unit_presence_mismatches,
                 ROUND(AVG(CASE WHEN note IS NOT NULL THEN length(note) END), 1)
                     AS average_detail_characters,
@@ -185,24 +209,52 @@ def build_baseline_report(database_path: Path) -> dict[str, Any]:
             connection,
             """
             SELECT
-                SUM(CASE WHEN julianday(created_at) IS NULL THEN 1 ELSE 0 END)
+                COALESCE(
+                    SUM(CASE WHEN julianday(created_at) IS NULL
+                        THEN 1 ELSE 0 END),
+                    0
+                )
                     AS invalid_created_at,
-                SUM(CASE WHEN julianday(occurred_at) IS NULL THEN 1 ELSE 0 END)
+                COALESCE(
+                    SUM(CASE WHEN julianday(occurred_at) IS NULL
+                        THEN 1 ELSE 0 END),
+                    0
+                )
                     AS invalid_occurred_at,
-                SUM(CASE WHEN created_at GLOB '*[+-][0-9][0-9]:[0-9][0-9]'
-                    OR created_at LIKE '%Z' THEN 0 ELSE 1 END)
+                COALESCE(
+                    SUM(CASE WHEN created_at
+                        GLOB '*[+-][0-9][0-9]:[0-9][0-9]'
+                        OR created_at LIKE '%Z' THEN 0 ELSE 1 END),
+                    0
+                )
                     AS created_at_without_explicit_offset,
-                SUM(CASE WHEN occurred_at GLOB '*[+-][0-9][0-9]:[0-9][0-9]'
-                    OR occurred_at LIKE '%Z' THEN 0 ELSE 1 END)
+                COALESCE(
+                    SUM(CASE WHEN occurred_at
+                        GLOB '*[+-][0-9][0-9]:[0-9][0-9]'
+                        OR occurred_at LIKE '%Z' THEN 0 ELSE 1 END),
+                    0
+                )
                     AS occurred_at_without_explicit_offset,
-                SUM(CASE WHEN julianday(occurred_at) >
-                    julianday(created_at) + (5.0 / 1440.0) THEN 1 ELSE 0 END)
+                COALESCE(
+                    SUM(CASE WHEN julianday(occurred_at) >
+                        julianday(created_at) + (5.0 / 1440.0)
+                        THEN 1 ELSE 0 END),
+                    0
+                )
                     AS occurred_more_than_five_minutes_after_creation,
-                SUM(CASE WHEN julianday(created_at) - julianday(occurred_at)
-                    >= (1.0 / 24.0) THEN 1 ELSE 0 END)
+                COALESCE(
+                    SUM(CASE WHEN julianday(created_at) -
+                        julianday(occurred_at) >= (1.0 / 24.0)
+                        THEN 1 ELSE 0 END),
+                    0
+                )
                     AS logged_at_least_one_hour_late,
-                SUM(CASE WHEN julianday(created_at) - julianday(occurred_at)
-                    >= 1.0 THEN 1 ELSE 0 END)
+                COALESCE(
+                    SUM(CASE WHEN julianday(created_at) -
+                        julianday(occurred_at) >= 1.0
+                        THEN 1 ELSE 0 END),
+                    0
+                )
                     AS logged_at_least_one_day_late
             FROM events
             """,
@@ -246,11 +298,20 @@ def build_baseline_report(database_path: Path) -> dict[str, Any]:
             )
             SELECT
                 COUNT(*) AS adjacent_pairs,
-                SUM(CASE WHEN gap_minutes <= 1.0 THEN 1 ELSE 0 END)
+                COALESCE(
+                    SUM(CASE WHEN gap_minutes <= 1.0 THEN 1 ELSE 0 END),
+                    0
+                )
                     AS within_one_minute,
-                SUM(CASE WHEN gap_minutes <= 5.0 THEN 1 ELSE 0 END)
+                COALESCE(
+                    SUM(CASE WHEN gap_minutes <= 5.0 THEN 1 ELSE 0 END),
+                    0
+                )
                     AS within_five_minutes,
-                SUM(CASE WHEN gap_minutes <= 15.0 THEN 1 ELSE 0 END)
+                COALESCE(
+                    SUM(CASE WHEN gap_minutes <= 15.0 THEN 1 ELSE 0 END),
+                    0
+                )
                     AS within_fifteen_minutes
             FROM gaps
             """,
@@ -289,7 +350,7 @@ def build_baseline_report(database_path: Path) -> dict[str, Any]:
             },
             "database": {
                 "integrity": integrity,
-                "file_size_bytes": database_path.stat().st_size,
+                "file_size_bytes": resolved_database_path.stat().st_size,
                 "read_only": True,
             },
             "corpus": {
