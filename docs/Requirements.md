@@ -169,3 +169,16 @@ The system shall:
 - allow timeline events to be opened for editing
 - display only events belonging to the selected local calendar day
 - retain the existing list view as a fallback
+
+## Read-Only Analysis Foundation
+
+The analysis layer shall:
+
+- open the canonical SQLite database without write access
+- leave the capture interface and raw event schema unchanged
+- use `event_name` as an analytical alias for `exercise_type`
+- use `details` as an analytical alias for `note`
+- report data quality and coverage without emitting event narratives
+- keep reproducible derived measures separate from inferred AURA variables
+- preserve local calendar-day semantics until an explicit time-zone policy is
+  adopted for cross-source alignment

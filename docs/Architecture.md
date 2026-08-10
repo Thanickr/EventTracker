@@ -580,28 +580,29 @@ These remain in the Parking Lot until real usage justifies them.
 
 ## 14. Current Development Priority
 
-The immediate development priority is completing the incremental synchronization loop:
+The incremental synchronization loop is operational and has been exercised
+repeatedly against the canonical SQLite database.
+
+The immediate development priority is now a read-only analysis layer:
 
 ```text
-Phone pending events
+Canonical SQLite database
     ↓
-Sync package
+Read-only analytical connection
     ↓
-Desktop SQLite importer
+Reproducible derived measures
     ↓
-Acknowledgment receipt
-    ↓
-Phone cleanup
+Daily Context Explorer
 ```
 
-Once this loop is reliable, the system will provide:
+This layer shall:
 
-- unrestricted phone capture
-- durable local archival
-- small incremental transfers
-- duplicate-safe imports
-- explicit acknowledgment before deletion
-- no proprietary cloud dependency
+- leave raw events unchanged
+- avoid adding fields to the capture interface
+- keep derived measures reproducible
+- keep inferred or AI-generated context distinct from observations
+- open the canonical database without write access
+- preserve the existing synchronization boundary
 
 ---
 

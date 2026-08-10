@@ -337,3 +337,26 @@ This document records important project decisions and the reasoning behind them.
 **Reason:** The event data is fundamentally temporal. A timeline better represents how events relate across a day while preserving the proven list interface during evaluation.
 
 **Date:** 2026-07-31
+
+---
+
+## Decision 0025: Stabilize Capture and Begin Read-Only Analysis
+
+**Decision:** The current minimal event capture interface is stable. New
+analytical needs will be implemented downstream rather than added to the input
+form until further real-world use demonstrates a capture problem.
+
+**Implementation:** Analysis will be a sibling layer that opens SQLite
+read-only. It will initially produce aggregate quality and coverage measures.
+The legacy `exercise_type` storage field will be exposed analytically as
+`event_name`; `note` will be exposed as `details`. Raw values remain unchanged.
+
+**Boundary:** Derived measures must be reproducible. Semantic labels,
+summaries, hypotheses, and AURA variables are inferred information and must not
+be represented as direct observations.
+
+**Reason:** The capture and synchronization workflow is functioning reliably,
+and the existing event corpus is sufficiently dense to support descriptive
+analysis. Isolating analysis protects the low-friction capture path.
+
+**Date:** 2026-08-10
