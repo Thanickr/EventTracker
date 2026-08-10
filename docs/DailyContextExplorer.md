@@ -353,6 +353,32 @@ Event names are sensitive user content.
 - Do not log event names or place them in diagnostics, errors, telemetry, the
   name-free baseline audit, or examples derived from real data.
 
+### 8.6 Aggregate consistency
+
+The response aggregates must satisfy these invariants:
+
+```text
+summary.event_count
+    = sum(days[].event_count)
+    = sum(event_name_totals[].event_count)
+```
+
+```text
+selected_day.event_count
+    = the event_count of the days[] entry whose date equals selected_day.date
+    = sum(selected_day.event_name_totals[].event_count)
+```
+
+The sum of an empty aggregate array is zero. These relationships apply in all
+states, including an empty database, a window without valid events, and a
+selected date without events. Invalid occurrence timestamps are excluded
+consistently from every quantity in these equations. Blank-name events remain
+included and contribute through the `(blank)` event-name bucket.
+
+Every selected date has exactly one matching entry in the zero-filled `days`
+sequence. Implementations must not emit aggregate lists or totals that violate
+these relationships.
+
 ## 9. Validation and Error Behavior
 
 Validation failures return HTTP 400 and a stable error response:
