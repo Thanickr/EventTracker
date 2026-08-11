@@ -634,6 +634,55 @@ Future analysis
 
 The capture layer should remain simple even if later analytical systems become sophisticated.
 
+## 16. Planned Daily Context Explorer Architecture
+
+Daily Context Explorer v0.1 is specified in
+[`DailyContextExplorer.md`](DailyContextExplorer.md). Its endpoint and dashboard
+are planned; they are not implemented by this documentation change.
+
+The planned read-only flow is:
+
+```text
+Dashboard UI
+    → dedicated daily-context endpoint
+    → aggregate analysis function
+    → SQLite opened read-only
+```
+
+The dedicated `GET /api/v1/daily-context` route will be separate from the
+existing raw `/events` route. The dashboard must consume the aggregate
+daily-context contract and must not obtain raw event records for client-side
+aggregation.
+
+The analytical boundary distinguishes three layers:
+
+```text
+Stored logged events
+    → observations
+
+Counts, date buckets, coverage, distributions
+    → reproducible derived measures
+
+Coherence, energy, emotion, mode, plasticity, meaning, causal context
+    → unimplemented inferred constructs
+```
+
+The planned endpoint shall:
+
+- remain inside the application's local loopback boundary
+- apply `Cache-Control: no-store` to successful and error responses
+- open SQLite read-only through a dedicated aggregate analysis path
+- perform no schema writes or migrations
+- perform no database access merely because a module is imported
+- exclude raw records, notes, identifiers, and individual timestamps
+- treat aggregate event-name labels as sensitive local content
+- keep event names out of diagnostics, errors, and telemetry
+- preserve stored local-calendar-date semantics without timezone reconstruction
+
+The current name-free `build_baseline_report()` audit remains separate and does
+not gain event-name output. Dashboard, chart, and long-term trend implementation
+remain future work.
+
 ## Timeline Presentation Layer
 
 The phone PWA supports two views over the same IndexedDB event collection:
