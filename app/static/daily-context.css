@@ -1,0 +1,481 @@
+:root {
+    color-scheme: light;
+    font-family: Arial, sans-serif;
+    background: #f3f5f7;
+    color: #18212b;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    max-width: 100%;
+    min-width: 0;
+    margin: 0;
+    background: #f3f5f7;
+    color: #18212b;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+button:focus-visible,
+input:focus-visible,
+[tabindex="0"]:focus-visible {
+    outline: 3px solid #2d6cdf;
+    outline-offset: 3px;
+}
+
+.dashboard-shell {
+    width: min(1180px, 100%);
+    margin: 0 auto;
+    padding: 32px 20px 56px;
+}
+
+.dashboard-header,
+.section-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.dashboard-header h1,
+.section-heading h2,
+.diagnostic-panel h2 {
+    margin: 0;
+}
+
+.dashboard-header > div,
+.section-heading > div,
+.field-group {
+    min-width: 0;
+}
+
+.dashboard-header h1 {
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    letter-spacing: -0.04em;
+}
+
+.eyebrow {
+    margin: 0 0 6px;
+    color: #315f9b;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.dashboard-description,
+.section-heading p,
+.diagnostic-note {
+    color: #586574;
+    line-height: 1.5;
+}
+
+.dashboard-description {
+    max-width: 640px;
+    margin: 8px 0 0;
+    font-size: 1.05rem;
+    overflow-wrap: anywhere;
+}
+
+.local-indicator {
+    flex: 0 0 auto;
+    margin: 5px 0 0;
+    padding: 8px 12px;
+    border: 1px solid #b8c7d9;
+    border-radius: 999px;
+    background: #edf3fc;
+    color: #274e7c;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.panel {
+    min-width: 0;
+    margin-top: 20px;
+    padding: 22px;
+    border: 1px solid #dce2e8;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 8px 28px rgba(24, 33, 43, 0.06);
+}
+
+.section-heading p {
+    margin: 5px 0 0;
+}
+
+.date-control-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(150px, 1fr)) auto;
+    align-items: end;
+    gap: 14px;
+    margin-top: 18px;
+}
+
+.preset-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-width: 0;
+    margin: 16px 0 0;
+    padding: 0;
+    border: 0;
+}
+
+.preset-controls legend {
+    float: none;
+    width: 100%;
+    margin: 0 0 4px;
+    padding: 0;
+    color: #526170;
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.preset-button {
+    min-height: 36px;
+    padding: 7px 12px;
+    border: 1px solid #aab6c2;
+    border-radius: 999px;
+    background: #f7f8fa;
+    color: #263545;
+    font-weight: 700;
+}
+
+.preset-button:hover:not(:disabled) {
+    background: #edf3fc;
+}
+
+.field-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.field-group input {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 9px 10px;
+    border: 1px solid #adb8c4;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #18212b;
+}
+
+.primary-button,
+.secondary-button {
+    min-height: 44px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 700;
+}
+
+.primary-button {
+    border: 1px solid #1f4f8a;
+    background: #315f9b;
+    color: #ffffff;
+}
+
+.primary-button:hover:not(:disabled) {
+    background: #274e7c;
+}
+
+.secondary-button {
+    border: 1px solid #aab6c2;
+    background: #f7f8fa;
+    color: #263545;
+}
+
+.status-message,
+.error-message {
+    min-height: 1.4em;
+    margin: 14px 0 0;
+    line-height: 1.4;
+}
+
+.status-message {
+    color: #465666;
+}
+
+.error-message {
+    padding: 10px 12px;
+    border-left: 4px solid #a33a3a;
+    background: #fff1f1;
+    color: #762626;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.metric-card {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #e0e5ea;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.metric-card h3 {
+    min-height: 2.4em;
+    margin: 0;
+    color: #526170;
+    font-size: 0.84rem;
+    line-height: 1.2;
+}
+
+.metric-value {
+    margin: 9px 0 0;
+    font-size: clamp(1.5rem, 4vw, 2.15rem);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.empty-state,
+.empty-list {
+    margin: 16px 0 0;
+    padding: 12px;
+    border-radius: 8px;
+    background: #f5f7f9;
+    color: #526170;
+}
+
+.daily-chart-scroll {
+    max-width: 100%;
+    margin-top: 18px;
+    padding: 8px 4px 14px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+}
+
+.daily-chart {
+    display: grid;
+    grid-auto-columns: 48px;
+    grid-auto-flow: column;
+    align-items: end;
+    min-width: max-content;
+    height: 260px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.daily-chart-item {
+    display: flex;
+    align-items: stretch;
+    height: 100%;
+}
+
+.daily-bar-button {
+    display: grid;
+    grid-template-rows: 1fr auto auto;
+    align-items: end;
+    width: 100%;
+    min-width: 42px;
+    margin: 0;
+    padding: 6px 4px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: #263545;
+}
+
+.daily-bar-button:hover,
+.daily-bar-button[aria-current="date"] {
+    background: #edf3fc;
+}
+
+.daily-bar-button[aria-current="date"] {
+    box-shadow: inset 0 0 0 2px #315f9b;
+}
+
+.daily-bar {
+    width: 22px;
+    height: max(4px, var(--bar-height));
+    margin: 0 auto 8px;
+    border-radius: 4px 4px 0 0;
+    background: #5f7590;
+}
+
+.daily-bar-button[aria-current="date"] .daily-bar {
+    background: #315f9b;
+}
+
+.daily-count,
+.daily-date-label {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.daily-count {
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.daily-date-label {
+    margin-top: 4px;
+    color: #607080;
+    font-size: 0.7rem;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.count-list {
+    margin: 16px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.count-list li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid #e5e9ed;
+}
+
+.count-label {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.count-value {
+    flex: 0 0 auto;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.selected-day-panel {
+    border-color: #b8c7d9;
+}
+
+.selected-day-total {
+    flex: 0 0 auto;
+    margin: 0;
+    color: #315f9b;
+    text-align: right;
+}
+
+.selected-day-total span {
+    display: block;
+}
+
+#selected-day-count {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.diagnostic-grid {
+    align-items: stretch;
+}
+
+.diagnostic-panel {
+    background: #fbfcfd;
+    box-shadow: none;
+}
+
+.diagnostic-list {
+    margin: 16px 0 0;
+}
+
+.diagnostic-list > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 9px 0;
+    border-bottom: 1px solid #e5e9ed;
+}
+
+.diagnostic-list dt {
+    color: #526170;
+}
+
+.diagnostic-list dd {
+    margin: 0;
+    font-weight: 700;
+    text-align: right;
+}
+
+.diagnostic-note {
+    margin: 14px 0 0;
+    font-size: 0.88rem;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+@media (max-width: 760px) {
+    .dashboard-shell {
+        padding: 22px 12px 40px;
+    }
+
+    .dashboard-header,
+    .section-heading {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .local-indicator,
+    .secondary-button {
+        align-self: flex-start;
+    }
+
+    .date-control-grid,
+    .summary-grid,
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .metric-card h3 {
+        min-height: 0;
+    }
+
+    .panel {
+        padding: 16px;
+    }
+
+    .selected-day-total {
+        text-align: left;
+    }
+
+    .preset-controls {
+        align-items: stretch;
+    }
+}
+
+@media (min-width: 980px) {
+    .summary-grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+}
