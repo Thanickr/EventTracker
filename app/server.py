@@ -8,6 +8,7 @@ Initial endpoints:
 - GET /events
 - POST /events
 - GET /api/v1/daily-context
+- GET /daily-context
 """
 
 from collections.abc import Awaitable, Callable
@@ -241,6 +242,13 @@ def read_index() -> FileResponse:
     """Serve the one-screen Event Tracker web interface."""
 
     return FileResponse(STATIC_DIR / "index.html")
+
+
+@app.get("/daily-context", include_in_schema=False)
+def read_daily_context_dashboard() -> FileResponse:
+    """Serve the local Daily Context Explorer dashboard."""
+
+    return FileResponse(STATIC_DIR / "daily-context.html")
 
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    />
+    <title>Daily Context | Event Tracker</title>
+    <link rel="stylesheet" href="/static/daily-context.css" />
+    <script src="/static/daily-context.js" defer></script>
+</head>
+<body>
+    <main class="dashboard-shell">
+        <header class="dashboard-header">
+            <div>
+                <p class="eyebrow">Event Tracker</p>
+                <h1>Daily Context</h1>
+                <p class="dashboard-description">
+                    Review aggregate activity across a selected date range.
+                </p>
+            </div>
+            <p class="local-indicator" aria-label="Local aggregate view">
+                Local aggregate view
+            </p>
+        </header>
+
+        <section class="panel controls-panel" aria-labelledby="controls-title">
+            <div class="section-heading">
+                <div>
+                    <h2 id="controls-title">Date range</h2>
+                    <p>Choose an inclusive range of up to 90 days.</p>
+                </div>
+                <button id="today-button" class="secondary-button" type="button">
+                    Today
+                </button>
+            </div>
+
+            <form id="dashboard-form" aria-describedby="dashboard-error">
+                <fieldset class="preset-controls">
+                    <legend>Quick ranges</legend>
+                    <button class="preset-button" type="button" data-day-count="7">
+                        7 days
+                    </button>
+                    <button class="preset-button" type="button" data-day-count="30">
+                        30 days
+                    </button>
+                    <button class="preset-button" type="button" data-day-count="90">
+                        90 days
+                    </button>
+                </fieldset>
+                <div class="date-control-grid">
+                    <div class="field-group">
+                        <label for="start-date">Start date</label>
+                        <input id="start-date" name="start" type="date" required />
+                    </div>
+                    <div class="field-group">
+                        <label for="end-date">End date</label>
+                        <input id="end-date" name="end" type="date" required />
+                    </div>
+                    <div class="field-group">
+                        <label for="selected-date">Selected date</label>
+                        <input
+                            id="selected-date"
+                            name="selected_date"
+                            type="date"
+                            required
+                        />
+                    </div>
+                    <button id="load-button" class="primary-button" type="submit">
+                        Load dashboard
+                    </button>
+                </div>
+            </form>
+
+            <p id="dashboard-status" class="status-message" role="status" aria-live="polite"></p>
+            <p id="dashboard-error" class="error-message" role="alert" hidden></p>
+        </section>
+
+        <div id="dashboard-content" hidden>
+            <section class="panel" aria-labelledby="summary-title">
+                <div class="section-heading">
+                    <div>
+                        <h2 id="summary-title">Summary</h2>
+                        <p id="range-label"></p>
+                    </div>
+                </div>
+                <div class="summary-grid">
+                    <article class="metric-card">
+                        <h3>Total events</h3>
+                        <p id="summary-events" class="metric-value">0</p>
+                    </article>
+                    <article class="metric-card">
+                        <h3>Calendar days</h3>
+                        <p id="summary-calendar-days" class="metric-value">0</p>
+                    </article>
+                    <article class="metric-card">
+                        <h3>Days with logged events</h3>
+                        <p id="summary-days-with" class="metric-value">0</p>
+                    </article>
+                    <article class="metric-card">
+                        <h3>Days without logged events</h3>
+                        <p id="summary-days-without" class="metric-value">0</p>
+                    </article>
+                    <article class="metric-card">
+                        <h3>Logging coverage</h3>
+                        <p id="summary-coverage" class="metric-value">0%</p>
+                    </article>
+                    <article class="metric-card">
+                        <h3>Average events per logged day</h3>
+                        <p id="summary-average" class="metric-value">—</p>
+                    </article>
+                </div>
+                <p id="empty-state" class="empty-state" hidden>
+                    No events were logged in this range. Every date is still shown below.
+                </p>
+            </section>
+
+            <section class="panel" aria-labelledby="daily-activity-title">
+                <div class="section-heading">
+                    <div>
+                        <h2 id="daily-activity-title">Daily activity</h2>
+                        <p>Select a date bar to update the selected-day view.</p>
+                    </div>
+                </div>
+                <div
+                    class="daily-chart-scroll"
+                    role="region"
+                    aria-label="Daily event counts"
+                    tabindex="0"
+                >
+                    <ol id="daily-chart" class="daily-chart"></ol>
+                </div>
+            </section>
+
+            <div class="detail-grid">
+                <section class="panel" aria-labelledby="event-mix-title">
+                    <div class="section-heading">
+                        <div>
+                            <h2 id="event-mix-title">Event-name totals</h2>
+                            <p>Aggregate labels for the full date range.</p>
+                        </div>
+                    </div>
+                    <ul id="event-name-totals" class="count-list"></ul>
+                    <p id="event-name-empty" class="empty-list" hidden>
+                        No event-name totals for this range.
+                    </p>
+                </section>
+
+                <section class="panel selected-day-panel" aria-labelledby="selected-day-title">
+                    <div class="section-heading">
+                        <div>
+                            <h2 id="selected-day-title">Selected day</h2>
+                            <p id="selected-day-date"></p>
+                        </div>
+                        <p class="selected-day-total">
+                            <span id="selected-day-count">0</span>
+                            <span>events</span>
+                        </p>
+                    </div>
+                    <ul id="selected-day-totals" class="count-list"></ul>
+                    <p id="selected-day-empty" class="empty-list" hidden>
+                        No events were logged on this date.
+                    </p>
+                </section>
+            </div>
+
+            <div class="detail-grid diagnostic-grid">
+                <section class="panel diagnostic-panel" aria-labelledby="quality-title">
+                    <h2 id="quality-title">Data quality</h2>
+                    <dl class="diagnostic-list">
+                        <div>
+                            <dt>Invalid occurrence timestamps (entire corpus)</dt>
+                            <dd id="quality-invalid">0</dd>
+                        </div>
+                        <div>
+                            <dt>Blank event names (selected range)</dt>
+                            <dd id="quality-blank">0</dd>
+                        </div>
+                    </dl>
+                    <p id="timezone-note" class="diagnostic-note"></p>
+                    <p class="diagnostic-note">
+                        Invalid occurrence timestamps are excluded from date buckets and date-based metrics.
+                    </p>
+                </section>
+
+                <section class="panel diagnostic-panel" aria-labelledby="privacy-title">
+                    <h2 id="privacy-title">Response privacy</h2>
+                    <dl id="privacy-list" class="diagnostic-list"></dl>
+                    <p class="diagnostic-note">
+                        Event-name labels are aggregate values and may still be sensitive.
+                    </p>
+                </section>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
